@@ -3,7 +3,7 @@ from nextcord import Interaction, TextInputStyle, ui
 async def ServerTypeCallback(interaction: Interaction) -> None:
 	application_details[interaction.user.id].append(interaction.data["values"][0])
 	
-	modal = nextcord.ui.Modal(
+	modal = ui.Modal(
 		title="Server Application",
 		timeout=None
 	)
