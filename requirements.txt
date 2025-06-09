@@ -1,3 +1,4 @@
 nextcord
 colorama
 colorlog
+python-dotenv

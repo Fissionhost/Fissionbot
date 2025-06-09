@@ -3,6 +3,9 @@ from nextcord.ext import commands
 import os
 import logging
 import colorlog
+from dotenv import load_dotenv
+from os import getenv
+load_dotenv()
 
 handler = colorlog.StreamHandler()
 handler.setFormatter(colorlog.ColoredFormatter(
@@ -50,4 +53,4 @@ async def restartcommand(ctx, extension: str):
     except Exception as e:
         await ctx.send(f"Failed to restart extension `{extension}`: {e}")
 
-bot.run("TOKEN")
+bot.run(getenv("DISCORD_TOKEN"))
