@@ -52,11 +52,11 @@ class Apply(commands.Cog):
                 title="Discord Bot Application",
                 description="Please select the type of server you want to apply for",
                 color=Color.blurple()
-        )
-        serversubtype_select_options = [
-            SelectOption(label="Python", description="Python is a versatile, high-level programming language known for its readability and ease of use."),
-            SelectOption(label="Javascript", description="JavaScript is a versatile, lightweight programming language.")
-        ]
+            )
+            serversubtype_select_options = [
+                SelectOption(label="Python", description="Python is a versatile, high-level programming language known for its readability and ease of use."),
+                SelectOption(label="Javascript", description="JavaScript is a versatile, lightweight programming language.")
+            ]
 
         serversubtype_select = ui.Select(placeholder="Choose a server type...", options=serversubtype_select_options)
         serversubtype_select.callback = self.ServerTypeCallback
