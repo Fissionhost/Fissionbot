@@ -1,0 +1,53 @@
+import nextcord
+from nextcord.ext import commands
+import os
+import logging
+import colorlog
+
+handler = colorlog.StreamHandler()
+handler.setFormatter(colorlog.ColoredFormatter(
+    "%(log_color)s[%(levelname)s] %(asctime)s - %(name)s: %(message)s",
+    log_colors={
+        'DEBUG':    'cyan',
+        'INFO':     'green',
+        'WARNING':  'yellow',
+        'ERROR':    'red',
+        'CRITICAL': 'bold_red',
+    }
+))
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+logger.handlers.clear()
+logger.addHandler(handler)
+
+logging.getLogger("nextcord").setLevel(logging.WARNING)
+logging.getLogger("discord").setLevel(logging.WARNING)
+
+intents = nextcord.Intents.default()
+bot = commands.Bot(command_prefix="!", intents=intents)
+bot.debuggingMode = True
+
+@bot.event
+async def on_ready():
+    logger.info(f"Logged in as {bot.user}")
+
+# Manually load apply since it's in a subfolder
+bot.load_extension("cogs.apply")
+
+# Optionally auto-load others
+for filename in os.listdir("./cogs"):
+    if filename.endswith(".py") and not filename.startswith("_"):
+        bot.load_extension(f"cogs.{filename[:-3]}")
+
+@bot.slash_command()
+async def restartcommand(ctx, extension: str):
+    """Restart a specific command by reloading its extension."""
+    try:
+        bot.unload_extension(extension)
+        bot.load_extension(extension)
+        await ctx.send(f"Extension `{extension}` has been restarted successfully.")
+    except Exception as e:
+        await ctx.send(f"Failed to restart extension `{extension}`: {e}")
+
+bot.run("TOKEN")

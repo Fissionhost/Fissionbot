@@ -1,0 +1,28 @@
+from nextcord import Interaction
+
+async def ServerTypeCallback(interaction: Interaction) -> None:
+	application_details[interaction.user.id].append(interaction.data["values"][0])
+	
+	modal = nextcord.ui.Modal(
+		title="Server Application",
+		timeout=None
+	)
+	modal.add_item(nextcord.ui.TextInput(
+		label="Why do you want a server?",
+		placeholder="Explain your motivation...",
+		required=True,
+		style=nextcord.TextInputStyle.paragraph
+	))
+	modal.add_item(nextcord.ui.TextInput(
+		label="How did you find us?",
+		placeholder="Describe your connection...",
+		required=True,
+		style=nextcord.TextInputStyle.paragraph
+	))
+	modal.add_item(nextcord.ui.TextInput(
+		label="Email",
+		placeholder="*****@*******.com",
+		required=True
+	))
+	modal.callback = modal_submitted_callback
+	await interaction.response.send_modal(modal)
