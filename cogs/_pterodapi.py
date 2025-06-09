@@ -101,8 +101,7 @@ class Users:
     async def create_user(self, username: str, email: str, firstname: str, surname: str) -> str:
         """Creates a new user with the given details."""
         url = f'{self.address}/api/application/users'
-        payload = '{{"email": "{}","username": "{}","first_name": "{}","last_name": "{}"}}'
-        / .format(email, username, firstname, surname)
+        payload = '{{"email": "{}","username": "{}","first_name": "{}","last_name": "{}"}}'.format(email, username, firstname, surname)
         async with aiohttp.ClientSession() as session:
             async with session.post(url, data=payload, headers=self.headers) as response:
                 return await response.text()
