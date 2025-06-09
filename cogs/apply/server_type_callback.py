@@ -24,5 +24,5 @@ async def ServerTypeCallback(interaction: Interaction) -> None:
 		placeholder="*****@*******.com",
 		required=True
 	))
-	modal.callback = modal_submitted_callback
+	modal.callback = None # Next stage
 	await interaction.response.send_modal(modal)
