@@ -5,6 +5,8 @@ import logging
 import colorlog
 from dotenv import load_dotenv
 from os import getenv
+from config import APPLICATION_DETAILS
+from json import load, dump
 load_dotenv()
 
 handler = colorlog.StreamHandler()
@@ -27,8 +29,34 @@ logger.addHandler(handler)
 logging.getLogger("nextcord").setLevel(logging.WARNING)
 logging.getLogger("discord").setLevel(logging.WARNING)
 
+class Bot(commands.Bot):
+    def __init__(self, command_prefix, intents):
+        super().__init__(command_prefix=command_prefix, intents=intents)
+        self.application_details = {}
+        self.debuggingMode = False
+        
+    async def SaveDetails(self, userID: int, key: str, value: any) -> bool:
+        try:
+            self.application_details[userID] = {}
+            userDetails = self.application_details[userID]
+            userDetails[key] = value
+            
+            with open(APPLICATION_DETAILS, 'r') as file:
+                data = load(file)
+
+            data[userID] = userDetails
+
+            with open(APPLICATION_DETAILS, 'w') as file:
+                dump(data, file, indent=4)
+
+            return
+        except Exception as e:
+            if self.debuggingMode:
+                raise e
+            return e
+
 intents = nextcord.Intents.default()
-bot = commands.Bot(command_prefix="!", intents=intents)
+bot = Bot(command_prefix="!", intents=intents)
 bot.debuggingMode = True
 
 @bot.event

@@ -1,8 +1,7 @@
 from nextcord.ext import commands
-from nextcord import Interaction, SlashOption, SelectOption, Embed, Color, slash_command, utils, ui
+from nextcord import Interaction, SlashOption, SelectOption, TextInputStyle, Embed, Color, slash_command, utils, ui
 from cogs import _pterodapi
 from cogs._errors import HandleError
-from cogs.apply.server_type_callback import ServerTypeCallback
 from config import APPLICATION_DETAILS, ERROR_CHANNEL, DEVELOPER_ID
 from colorama import Fore
 import json
@@ -26,7 +25,7 @@ class Apply(commands.Cog):
             )
         ):
         
-        if e:= await self.SaveDetails(userID=interaction.user.id,key="nest",value=type):
+        if e:= await self.bot.SaveDetails(userID=interaction.user.id,key="nest",value=type):
             ErrorChannel = self.bot.get_channel(ERROR_CHANNEL)
             if not ErrorChannel: ErrorChannel = await self.bot.fetch_channel(ERROR_CHANNEL)
             return await HandleError(interaction, e, ErrorChannel)
@@ -59,34 +58,38 @@ class Apply(commands.Cog):
         ]
         
         serversubtype_select = ui.Select(placeholder="Choose a server type...", options=serversubtype_select_options)
-        serversubtype_select.callback = ServerTypeCallback
+        serversubtype_select.callback = self.ServerTypeCallback
         
         view = ui.View()
         view.add_item(serversubtype_select)
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
-        
-    async def SaveDetails(self, userID: int, key: str, value: any) -> bool:
-        try:
-            self.application_details[userID] = {}
-            userDetails = self.application_details[userID]
-            userDetails[key] = value
-            
-            with open(APPLICATION_DETAILS, 'r') as file:
-                data = json.load(file)
 
-            data[userID] = userDetails
+    async def ServerTypeCallback(self, interaction: Interaction) -> None:
+        await self.bot.SaveDetails(userID=interaction.user.id,key="subtype",value=interaction.data["values"][0])
 
-            with open(APPLICATION_DETAILS, 'w') as file:
-                json.dump(data, file, indent=4)
-
-            return
-        except Exception as e:
-            ErrorChannel = self.bot.get_channel(ERROR_CHANNEL)
-            if not ErrorChannel: ErrorChannel = await self.bot.fetch_channel(ERROR_CHANNEL)
-            await HandleError(None, e, ErrorChannel)
-            if self.bot.debuggingMode:
-                raise e
-            return e
+        modal = ui.Modal(
+            title="Server Application",
+            timeout=None
+        )
+        modal.add_item(ui.TextInput(
+            label="Why do you want a server?",
+            placeholder="Explain your motivation...",
+            required=True,
+            style=TextInputStyle.paragraph
+        ))
+        modal.add_item(ui.TextInput(
+            label="How did you find us?",
+            placeholder="Describe your connection...",
+            required=True,
+            style=TextInputStyle.paragraph
+        ))
+        modal.add_item(ui.TextInput(
+            label="Email",
+            placeholder="*****@*******.com",
+            required=True
+        ))
+        modal.callback = None # Next stage
+        await interaction.response.send_modal(modal)
 
 def setup(bot):
     bot.add_cog(Apply(bot))
