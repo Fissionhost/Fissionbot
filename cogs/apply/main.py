@@ -32,10 +32,10 @@ class Apply(commands.Cog):
             return await HandleError(interaction, e, ErrorChannel)
 
         if type == "Minecraft":
-            embed = nextcord.Embed(
+            embed = Embed(
                 title="Minecraft Server Application",
                 description="Please select the type of server you want to apply for:",
-                color=nextcord.Color.blurple())      
+                color=Color.blurple())      
             
             serversubtype_select_options = [
                 SelectOption(label="Paper", description="A Minecraft game server based on Spigot."),
