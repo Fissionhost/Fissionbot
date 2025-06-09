@@ -1,10 +1,12 @@
-from config import ERROR_CHANNEL, DEVELOPER_ID
-from nextcord import Embed, Color
+from config import DEVELOPER_ID
+from nextcord import Embed, Interaction, Color
 from colorama import Fore
 
-async def HandleError(interaction, error, ErrorChannel):
+
+async def HandleError(interaction: Interaction, error, ErrorChannel):
     print(f"{Fore.RED}[Critical Error] {error}{Fore.RESET}")
-    if interaction: await interaction.response.send_message(embed=Embed(
+    if interaction: 
+        await interaction.response.send_message(embed=Embed(
         title="An error occured",
         description="Unfortunately an error occured and your application has been stopped. Staff have been notified!",
         color=Color.red()
@@ -14,3 +16,4 @@ async def HandleError(interaction, error, ErrorChannel):
         description=str(error),
         color=Color.red()
     ))
+    

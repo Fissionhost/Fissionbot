@@ -29,18 +29,19 @@ logger.addHandler(handler)
 logging.getLogger("nextcord").setLevel(logging.WARNING)
 logging.getLogger("discord").setLevel(logging.WARNING)
 
+
 class Bot(commands.Bot):
     def __init__(self, command_prefix, intents):
         super().__init__(command_prefix=command_prefix, intents=intents)
         self.application_details = {}
         self.debuggingMode = False
-        
+
     async def SaveDetails(self, userID: int, key: str, value: any) -> bool:
         try:
             self.application_details[userID] = {}
             userDetails = self.application_details[userID]
             userDetails[key] = value
-            
+
             with open(APPLICATION_DETAILS, 'r') as file:
                 data = load(file)
 
@@ -55,9 +56,11 @@ class Bot(commands.Bot):
                 raise e
             return e
 
+
 intents = nextcord.Intents.default()
 bot = Bot(command_prefix="!", intents=intents)
 bot.debuggingMode = True
+
 
 @bot.event
 async def on_ready():
@@ -70,6 +73,7 @@ bot.load_extension("cogs.apply")
 for filename in os.listdir("./cogs"):
     if filename.endswith(".py") and not filename.startswith("_"):
         bot.load_extension(f"cogs.{filename[:-3]}")
+
 
 @bot.slash_command()
 async def restartcommand(ctx, extension: str):

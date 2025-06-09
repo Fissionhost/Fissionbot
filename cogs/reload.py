@@ -2,6 +2,7 @@ from nextcord.ext import commands
 from nextcord import Interaction, SlashOption, Embed, Color, slash_command
 from bot import logger
 
+
 class Reload(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -30,6 +31,7 @@ class Reload(commands.Cog):
         except Exception as e:
             logger.warning(f"Extension [{extension}] failed to reloaded: {e} ")
             return await interaction.response.send_message(f"Failed to reload extension `{extension}`: {e}", ephemeral=True)
+
 
 def setup(bot):
     bot.add_cog(Reload(bot))

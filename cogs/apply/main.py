@@ -6,6 +6,7 @@ from config import APPLICATION_DETAILS, ERROR_CHANNEL, DEVELOPER_ID
 from colorama import Fore
 import json
 
+
 class Apply(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -24,7 +25,7 @@ class Apply(commands.Cog):
 		    choices=("Discord Bot", "Minecraft")
             )
         ):
-        
+
         if e:= await self.bot.SaveDetails(userID=interaction.user.id,key="nest",value=type):
             ErrorChannel = self.bot.get_channel(ERROR_CHANNEL)
             if not ErrorChannel: ErrorChannel = await self.bot.fetch_channel(ERROR_CHANNEL)
@@ -35,7 +36,7 @@ class Apply(commands.Cog):
                 title="Minecraft Server Application",
                 description="Please select the type of server you want to apply for:",
                 color=Color.blurple())      
-            
+
             serversubtype_select_options = [
                 SelectOption(label="Paper", description="A Minecraft game server based on Spigot."),
                 SelectOption(label="Bungeecord", description="BungeeCord is a sophisticated proxy for managing multiple servers."),
@@ -45,7 +46,7 @@ class Apply(commands.Cog):
                 SelectOption(label="Nukkit", description="Nukkit is nuclear-powered server software for Minecraft Bedrock Edition."),
                 SelectOption(label="Pocketmine", description="PocketMine-MP is customisable server software for Minecraft: Bedrock Edition written in PHP.")
 		  ]
-		  
+
         elif type == "Discord Bot":
             embed = Embed(
                 title="Discord Bot Application",
@@ -56,10 +57,10 @@ class Apply(commands.Cog):
             SelectOption(label="Python", description="Python is a versatile, high-level programming language known for its readability and ease of use."),
             SelectOption(label="Javascript", description="JavaScript is a versatile, lightweight programming language.")
         ]
-        
+
         serversubtype_select = ui.Select(placeholder="Choose a server type...", options=serversubtype_select_options)
         serversubtype_select.callback = self.ServerTypeCallback
-        
+
         view = ui.View()
         view.add_item(serversubtype_select)
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
@@ -90,6 +91,7 @@ class Apply(commands.Cog):
         ))
         modal.callback = None # Next stage
         await interaction.response.send_modal(modal)
+
 
 def setup(bot):
     bot.add_cog(Apply(bot))

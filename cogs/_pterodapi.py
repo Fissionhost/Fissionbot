@@ -27,8 +27,8 @@ code_docker_images: dict[tuple, int] = {
 }
 
 bot_egg_ids: list[int] = [
-    16, # Discord Bot - Python
-    17, # Discord Bot - Javascript
+    16,  # Discord Bot - Python
+    17,  # Discord Bot - Javascript
 ]
 
 server_egg_ids: list[int] = [
@@ -36,9 +36,9 @@ server_egg_ids: list[int] = [
     3,  # Minecraft - Forge
     4,  # Minecraft - Vanilla
     5,  # Minecraft - Paper
-    15, # Minecraft - Fabric
-    18, # Minecraft - Nukkit
-    19, # Minecraft - Pocketmine
+    15,  # Minecraft - Fabric
+    18,  # Minecraft - Nukkit
+    19,  # Minecraft - Pocketmine
 ]
 
 id_eggs: dict[tuple, int] = {
@@ -52,6 +52,7 @@ id_eggs: dict[tuple, int] = {
     3: ('Minecraft - Forge'),
     1: ('Minecraft - Bungeecord'),
 }
+
 
 class Users:
     def __init__(self, address: str, application_token: str, user_token: str, debug=False):
@@ -83,35 +84,36 @@ class Users:
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=self.headers) as response:
                 return await response.text()
-            
+
     async def get_servers(self, userid) -> str:
         """Fetches all servers associated with a user ID."""
         url = f'{self.address}/api/application/users/{userid}?include=servers'
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=self.headers) as response:
                 return await response.text()
-            
+
     async def get_id(self, username: str):
         """Fetches the user ID for a given username."""
         data = await self.get_details(username)
         attribs = loads(data)["data"]
         return attribs[0]["attributes"]["id"] if attribs != [] else None
-    
+
     async def create_user(self, username: str, email: str, firstname: str, surname: str) -> str:
         """Creates a new user with the given details."""
         url = f'{self.address}/api/application/users'
-        payload = '{{"email": "{}","username": "{}","first_name": "{}","last_name": "{}"}}'.format(email, username, firstname, surname)
+        payload = '{{"email": "{}","username": "{}","first_name": "{}","last_name": "{}"}}'
+        / .format(email, username, firstname, surname)
         async with aiohttp.ClientSession() as session:
             async with session.post(url, data=payload, headers=self.headers) as response:
                 return await response.text()
-            
+    
     async def delete_user(self, id: int):
         """Deletes a user by ID."""
         url = '{}/api/application/users/{}'.format(self.address, id)
         async with aiohttp.ClientSession() as session:
             async with session.delete(url, headers=self.headers) as response:
                 return await response.text()
-            
+     
     async def update_user_password(self, id: int, email: str, username: str, first_name: str, last_name: str, password: str):
         """Updates user details including password."""
         url = '{}/api/application/users/{}'.format(self.address, id)
@@ -119,11 +121,12 @@ class Users:
         async with aiohttp.ClientSession() as session:
             async with session.patch(url, data=payload, headers=self.headers) as response:
                 return await response.text()
-            
+
     async def mop(self, username: str): # My sister came up with this function name
         """Cleans the name of a user so it can be used in pterodactyl."""
         invalid_chars = [' ', '/', '\\', ':', '*', '?', '"', '<', '>', '|', '.', ',', ';', '!', '@', '#', '$', '%', '^', '&', '(', ')', '=', '+', '-', '_']
         return ''.join(char for char in username if char not in invalid_chars).lower()
+
 
 class Nodes:
     def __init__(self, address: str, application_token: str, user_token: str, debug=False):
@@ -148,13 +151,14 @@ class Nodes:
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=self.headers) as response:
                 return await response.text()
-            
+
     async def get_details(self, node_id: int) -> str:
         """Fetches details of a specific node by its ID."""
         url = f'{self.address}/api/application/nodes/{node_id}'
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=self.headers) as response:
                 return await response.text()
+
 
 class Servers:
     def __init__(self, address: str, application_token: str, user_token: str, debug=False):
@@ -191,7 +195,7 @@ class Servers:
         egg_tuple = tuple(egg)
         if egg_tuple not in egg_ids:
             return '{"errors":"Invalid egg type"}'
-        
+
         egg_id = egg_ids[egg_tuple]
         docker_id = code_docker_images[egg_tuple]
         allocation = await self.get_available_allocations(node_id=1)
@@ -270,20 +274,20 @@ class Servers:
         async with aiohttp.ClientSession() as session:
             async with session.post(url, data=payload, headers=self.headers) as response:
                 return await response.text()
-            
+
     async def delete_server(self, serverid) -> str:
         """Deletes a server by its ID."""
         url = f"{self.address}/api/application/servers/{serverid}"
         async with aiohttp.ClientSession() as session:
             async with session.delete(url, headers=self.headers) as response:
                 return await response.text()
-    
+
     async def edit_server_build(self, serverid: int, payload: dict | None = None):
         if not payload:
             # Right now only payloads are supported
             print("[PTERODAPI][ERROR] No payload provided. Only payloads[dict] are supported currently.")
             return '{"errors":"No payload provided"}'
-        
+
         url = f"{self.address}/api/application/servers/{serverid}/build"
         async with aiohttp.ClientSession() as session:
             async with session.patch(url, headers=self.headers, data=dumps(payload)) as response:
@@ -302,21 +306,22 @@ class Servers:
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=self.headers) as response:
                 return await response.text()
-                
+
     async def get_servers(self) -> str:
         """Fetches all servers"""
         url = f"{self.address}/api/application/servers"
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=self.headers) as response:
                 return await response.text()
-                
+
     async def get_server_utilisation(self, server_id: int) -> str:
         """Fetches the amount of resources a server is actively using"""
         url = f"{self.address}/api/client/servers/{server_id}/resources"
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=self.user_headers) as response:
                 return await response.text()
-            
+
+
 class API:    
     def __init__(self, address: str, application_token: str, user_token: str, debug=False):
         self.address = address
@@ -333,14 +338,17 @@ class API:
             "Accept": "application/json",
             "Content-Type": "application/json",
         }
-        
+
         self.Users = Users(address, application_token, user_token, debug)
         self.Servers = Servers(address, application_token, user_token, debug)
         self.Nodes = Nodes(address, application_token, user_token, debug)
+
 
 async def test():
     api = API(address="https://panel.fissionhost.org", application_token="ptla_4fB6pnehpUVKDEUY6L3IkFbKNfFuzFT4PXl9Gd6iBqp", 							 user_token="ptlc_1qcXqvxqhFdQyBDk4UvvF0sw6IM2TDTd5UTFFc6BHUO", debug=True)
     pass
 
+
 if __name__ == "__main__":
 	asyncio.run(test())
+	
