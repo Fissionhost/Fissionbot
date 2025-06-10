@@ -1,2 +1,2 @@
-def test_bot():
-    return 1
+def test_bot() -> None:
+    print("No tests!")
