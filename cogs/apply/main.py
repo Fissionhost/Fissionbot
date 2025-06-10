@@ -134,7 +134,11 @@ class Apply(commands.Cog):
             )
         )
         modal.add_item(
-            ui.TextInput(label="Email", placeholder="*****@*******.com", required=True)
+            ui.TextInput(
+                label="Email",
+                placeholder="*****@*******.com",
+                required=True,
+            )
         )
         modal.callback = None  # Next stage
         await interaction.response.send_modal(modal)

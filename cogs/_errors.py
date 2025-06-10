@@ -9,12 +9,16 @@ async def HandleError(interaction: Interaction, error, ErrorChannel):
         await interaction.response.send_message(
             embed=Embed(
                 title="An error occured",
-                description="Unfortunately an error occured and your application has been stopped. Staff have been notified!",
+                description="Unfortunately an error occured"
+                 " and your application"
+                 " has been stopped. Staff have been notified!",
                 color=Color.red(),
             ),
             ephemeral=True,
         )
     return await ErrorChannel.send(
         f"<@{DEVELOPER_ID}>",
-        embed=Embed(title="Critical Error", description=str(error), color=Color.red()),
+        embed=Embed(title="Critical Error", 
+                description=str(error), 
+                color=Color.red()),
     )

@@ -19,17 +19,22 @@ code_docker_images: dict[tuple, int] = {
         "ghcr.io/parkervcp/yolks:nodejs_21",
         "node index.js",
     ),
-    ("Discord Bot", "Python"): ("ghcr.io/parkervcp/yolks:python_3.12", "python app.py"),
+    ("Discord Bot", "Python"): (
+        "ghcr.io/parkervcp/yolks:python_3.12",
+        "python app.py",
+    ),
     ("Minecraft", "Fabric"): (
         "ghcr.io/parkervcp/yolks:java_21",
         "java -jar server.jar",
     ),
-    ("Minecraft", "Paper"): ("ghcr.io/parkervcp/yolks:java_21", "java -jar server.jar"),
+    ("Minecraft", "Paper"): ("ghcr.io/parkervcp/yolks:java_21", 
+                             "java -jar server.jar"),
     ("Minecraft", "Vanilla"): (
         "ghcr.io/parkervcp/yolks:java_21",
         "java -jar server.jar",
     ),
-    ("Minecraft", "Forge"): ("ghcr.io/parkervcp/yolks:java_21", "java -jar server.jar"),
+    ("Minecraft", "Forge"): ("ghcr.io/parkervcp/yolks:java_21", 
+                             "java -jar server.jar"),
     ("Minecraft", "Bungeecord"): (
         "ghcr.io/parkervcp/yolks:java_21",
         "java -jar server.jar",
@@ -123,13 +128,11 @@ class Users:
     ) -> str:
         """Creates a new user with the given details."""
         url = f"{self.address}/api/application/users"
-        payload = '{{"email": "{}","username": "{}","first_name": "{}","last_name": "{}"}}'.format(
-            email, username, firstname, surname
-        )
+        payload = (
+            '{{"email": "{}","username": "{}","first_name": "{}","last_name": "{}"}}'
+        ).format(email, username, firstname, surname)
         async with aiohttp.ClientSession() as session:
-            async with session.post(
-                url, data=payload, headers=self.headers
-            ) as response:
+            async with session.post(url, data=payload, headers=self.headers) as response:
                 return await response.text()
 
     async def delete_user(self, id: int):
@@ -193,7 +196,7 @@ class Users:
 
 
 class Nodes:
-    def __init__(
+    def __init(
         self, address: str, application_token: str, user_token: str, debug=False
     ):
         self.address = address
@@ -336,7 +339,9 @@ class Servers:
             async with session.delete(url, headers=self.headers) as response:
                 return await response.text()
 
-    async def edit_server_build(self, serverid: int, payload: dict | None = None):
+    async def edit_server_build(
+        self, serverid: int, payload: dict | None = None
+    ):
         if not payload:
             # Right now only payloads are supported
             print(

@@ -29,19 +29,23 @@ class Reload(commands.Cog):
                     color=Color.red(),
                 )
             )
+
         try:
             self.bot.unload_extension(extension)
             self.bot.load_extension(extension)
-            logger.warning(f"Extension [{extension}] was reloaded ")
+            logger.warning(f"Extension [{extension}] was reloaded")
 
             return await interaction.response.send_message(
                 f"Extension `{extension}` has been reloaded successfully.",
                 ephemeral=True,
             )
         except Exception as e:
-            logger.warning(f"Extension [{extension}] failed to reloaded: {e} ")
+            logger.warning(
+                f"Extension [{extension}] failed to reloaded: {e}"
+            )
             return await interaction.response.send_message(
-                f"Failed to reload extension `{extension}`: {e}", ephemeral=True
+                f"Failed to reload extension `{extension}`: {e}", 
+                ephemeral=True
             )
 
 

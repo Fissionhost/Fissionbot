@@ -85,9 +85,13 @@ async def restartcommand(ctx, extension: str):
     try:
         bot.unload_extension(extension)
         bot.load_extension(extension)
-        await ctx.send(f"Extension `{extension}` has been restarted successfully.")
+        await ctx.send(
+            f"Extension `{extension}` has been restarted successfully."
+        )
     except Exception as e:
-        await ctx.send(f"Failed to restart extension `{extension}`: {e}")
+        await ctx.send(
+            f"Failed to restart extension `{extension}`: {e}"
+        )
 
 
 bot.run(getenv("DISCORD_TOKEN"))
