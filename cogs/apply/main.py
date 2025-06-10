@@ -20,7 +20,9 @@ class Apply(commands.Cog):
         self.application_details: dict[int, dict[str, str]] = {}
         self.api = _pterodapi.API(
             address="https://panel.fissionhost.org",
-            application_token="ptla_4fB6pnehpUVKDEUY6L3IkFbKNfFuzFT4PXl9Gd6iBqp",
+            application_token=(
+                "ptla_4fB6pnehpUVKDEUY6L3IkFbKNfFuzFT4PXl9Gd6iBqp"
+            ),  # Flake8's fault
             user_token="ptlc_1qcXqvxqhFdQyBDk4UvvF0sw6IM2TDTd5UTFFc6BHUO",
             debug=True,
         )
@@ -48,7 +50,8 @@ class Apply(commands.Cog):
         if type == "Minecraft":
             embed = Embed(
                 title="Minecraft Server Application",
-                description="Please select the type of server you want to apply for:",
+                description="Please select the type of server you want to"
+                            " apply for:",
                 color=Color.blurple(),
             )
 
@@ -59,55 +62,68 @@ class Apply(commands.Cog):
                 ),
                 SelectOption(
                     label="Bungeecord",
-                    description="BungeeCord is a sophisticated proxy for managing multiple servers.",
+                    description="BungeeCord is a sophisticated proxy for "
+                    "managing multiple servers.",
                 ),
                 SelectOption(
                     label="Forge",
-                    description="Forge is a popular mod loader for Minecraft that allows users to add mods.",
+                    description="Forge is a popular mod loader for Minecraft "
+                    "that allows users to add mods.",
                 ),
                 SelectOption(
                     label="Fabric",
-                    description="Fabric is primarily designed for running modded clients but also servers.",
+                    description="Fabric is primarily designed for running "
+                    "modded clients but also servers.",
                 ),
                 SelectOption(
                     label="Vanilla",
-                    description="Plain vanilla server software, if you're nostalgic.",
+                    description="Plain vanilla server software, if you're "
+                    "nostalgic.",
                 ),
                 SelectOption(
                     label="Nukkit",
-                    description="Nukkit is nuclear-powered server software for Minecraft Bedrock Edition.",
+                    description="Nukkit is nuclear-powered server software for"
+                    " Minecraft Bedrock Edition.",
                 ),
                 SelectOption(
                     label="Pocketmine",
-                    description="PocketMine-MP is customisable server software for Minecraft: Bedrock Edition written in PHP.",
+                    description="PocketMine-MP is customisable server software"
+                    " for Minecraft: Bedrock Edition written in PHP.",
                 ),
             ]
 
         elif type == "Discord Bot":
             embed = Embed(
                 title="Discord Bot Application",
-                description="Please select the type of server you want to apply for",
+                description="Please select the type of server you want to "
+                            "apply for",
                 color=Color.blurple(),
             )
         serversubtype_select_options = [
             SelectOption(
                 label="Python",
-                description="Python is a versatile, high-level programming language known for its readability and ease of use.",
+                description="Python is a versatile, high-level programming "
+                            "language known for its readability and ease of "
+                            "use.",
             ),
             SelectOption(
                 label="Javascript",
-                description="JavaScript is a versatile, lightweight programming language.",
+                description="JavaScript is a versatile, lightweight "
+                            "programming language.",
             ),
         ]
 
         serversubtype_select = ui.Select(
-            placeholder="Choose a server type...", options=serversubtype_select_options
+            placeholder="Choose a server type...",
+            options=serversubtype_select_options
         )
         serversubtype_select.callback = self.ServerTypeCallback
 
         view = ui.View()
         view.add_item(serversubtype_select)
-        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+        await interaction.response.send_message(embed=embed,
+                                                view=view,
+                                                ephemeral=True)
 
     async def ServerTypeCallback(self, interaction: Interaction) -> None:
         await self.bot.SaveDetails(

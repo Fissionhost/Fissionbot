@@ -20,7 +20,8 @@ class Reload(commands.Cog):
     ):
         if not interaction.user.guild_permissions.administrator:
             logger.error(
-                f"Extension [{extension}] wasn't reloaded because [{interaction.user.name}] didn't have sufficient permission"
+                "Extension [{extension}] wasn't reloaded because "
+                f"[{interaction.user.name}] didn't have sufficient permission"
             )
             return await interaction.response.send_message(
                 embed=Embed(
@@ -44,7 +45,7 @@ class Reload(commands.Cog):
                 f"Extension [{extension}] failed to reloaded: {e}"
             )
             return await interaction.response.send_message(
-                f"Failed to reload extension `{extension}`: {e}", 
+                f"Failed to reload extension `{extension}`: {e}",
                 ephemeral=True
             )
 

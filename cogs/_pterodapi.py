@@ -27,14 +27,18 @@ code_docker_images: dict[tuple, int] = {
         "ghcr.io/parkervcp/yolks:java_21",
         "java -jar server.jar",
     ),
-    ("Minecraft", "Paper"): ("ghcr.io/parkervcp/yolks:java_21", 
-                             "java -jar server.jar"),
+    ("Minecraft", "Paper"): (
+        "ghcr.io/parkervcp/yolks:java_21",
+        "java -jar server.jar",
+    ),
     ("Minecraft", "Vanilla"): (
         "ghcr.io/parkervcp/yolks:java_21",
         "java -jar server.jar",
     ),
-    ("Minecraft", "Forge"): ("ghcr.io/parkervcp/yolks:java_21", 
-                             "java -jar server.jar"),
+    ("Minecraft", "Forge"): (
+        "ghcr.io/parkervcp/yolks:java_21",
+        "java -jar server.jar",
+    ),
     ("Minecraft", "Bungeecord"): (
         "ghcr.io/parkervcp/yolks:java_21",
         "java -jar server.jar",
@@ -79,7 +83,8 @@ id_eggs: dict[tuple, int] = {
 
 class Users:
     def __init__(
-        self, address: str, application_token: str, user_token: str, debug=False
+        self, address: str, application_token: str, user_token: str,
+        debug=False
     ):
         self.address = address
         self.application_token = application_token
@@ -105,7 +110,9 @@ class Users:
 
     async def get_details(self, username: str) -> str:
         """Fetches user details by username."""
-        url = f"{self.address}/api/application/users?filter[username]={username}"
+        url = (
+            f"{self.address}/api/application/users?filter[username]={username}"
+        )
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=self.headers) as response:
                 return await response.text()
@@ -129,10 +136,15 @@ class Users:
         """Creates a new user with the given details."""
         url = f"{self.address}/api/application/users"
         payload = (
-            '{{"email": "{}","username": "{}","first_name": "{}","last_name": "{}"}}'
-        ).format(email, username, firstname, surname)
+            '{{"email": "{}","username": "{}","first_name": "{}",'
+            '"last_name": "{}"}}'.format(
+                email, username, firstname, surname
+            )
+        )
         async with aiohttp.ClientSession() as session:
-            async with session.post(url, data=payload, headers=self.headers) as response:
+            async with session.post(
+                url, data=payload, headers=self.headers
+            ) as response:
                 return await response.text()
 
     async def delete_user(self, id: int):
@@ -152,9 +164,12 @@ class Users:
         password: str,
     ):
         """Updates user details including password."""
-        url = "{}/api/application/users/{}".format(self.address, id)
-        payload = '{{"email": "{}","username": "{}","first_name": "{}","last_name": "{}","language": "en","password": "{}"}}'.format(
-            email, username, first_name, last_name, password
+        url = f"{self.address}/api/application/users/{id}"
+        payload = (
+            '{{"email": "{}","username": "{}","first_name": "{}",'
+            '"last_name": "{}","language": "en","password": "{}"}}'.format(
+                email, username, first_name, last_name, password
+            )
         )
         async with aiohttp.ClientSession() as session:
             async with session.patch(
@@ -162,7 +177,8 @@ class Users:
             ) as response:
                 return await response.text()
 
-    async def mop(self, username: str):  # My sister came up with this function name
+    async def mop(self, username: str):
+        # My sister came up with this function name
         """Cleans the name of a user so it can be used in pterodactyl."""
         invalid_chars = [
             " ",
@@ -192,12 +208,15 @@ class Users:
             "-",
             "_",
         ]
-        return "".join(char for char in username if char not in invalid_chars).lower()
+        return "".join(
+            char for char in username if char not in invalid_chars
+        ).lower()
 
 
 class Nodes:
     def __init(
-        self, address: str, application_token: str, user_token: str, debug=False
+        self, address: str, application_token: str, user_token: str,
+        debug=False
     ):
         self.address = address
         self.application_token = application_token
@@ -230,8 +249,9 @@ class Nodes:
 
 
 class Servers:
-    def __init__(
-        self, address: str, application_token: str, user_token: str, debug=False
+    def __init(
+        self, address: str, application_token: str, user_token: str,
+        debug=False
     ):
         self.address = address
         self.application_token = application_token
@@ -299,7 +319,13 @@ class Servers:
                 "VERSION": "PM5",
                 "BUILD_NUMBER": "latest",
             },
-            "limits": {"memory": 2048, "swap": 0, "disk": 4096, "io": 500, "cpu": 50},
+            "limits": {
+                "memory": 2048,
+                "swap": 0,
+                "disk": 4096,
+                "io": 500,
+                "cpu": 50,
+            },
             "feature_limits": {"databases": 2, "backups": 3},
             "allocation": {"default": allocation},
         }
@@ -318,7 +344,13 @@ class Servers:
                 "PY_FILE": "app.py",
                 "REQUIREMENTS_FILE": "requirements.txt",
             },
-            "limits": {"memory": 512, "swap": 0, "disk": 4096, "io": 500, "cpu": 20},
+            "limits": {
+                "memory": 512,
+                "swap": 0,
+                "disk": 4096,
+                "io": 500,
+                "cpu": 20,
+            },
             "feature_limits": {"databases": 2, "backups": 3},
             "allocation": {"default": allocation},
         }
@@ -345,7 +377,8 @@ class Servers:
         if not payload:
             # Right now only payloads are supported
             print(
-                "[PTERODAPI][ERROR] No payload provided. Only payloads[dict] are supported currently."
+                "[PTERODAPI][ERROR] No payload provided. "
+                "Only payloads[dict] are supported currently."
             )
             return '{"errors":"No payload provided"}'
 
@@ -386,8 +419,9 @@ class Servers:
 
 
 class API:
-    def __init__(
-        self, address: str, application_token: str, user_token: str, debug=False
+    def __init(
+        self, address: str, application_token: str, user_token: str,
+        debug=False
     ):
         self.address = address
         self.application_token = application_token
@@ -410,7 +444,10 @@ class API:
 
 
 async def test():
-    # api = API(address="https://panel.fissionhost.org", application_token="ptla_4fB6pnehpUVKDEUY6L3IkFbKNfFuzFT4PXl9Gd6iBqp", 							 user_token="ptlc_1qcXqvxqhFdQyBDk4UvvF0sw6IM2TDTd5UTFFc6BHUO", debug=True)
+    # api = API(address="https://panel.fissionhost.org",
+    # application_token="ptla_4fB6pnehpUVKDEUY6L3IkFbKNfFuzFT4PXl9Gd6iBqp",
+    # user_token="ptlc_1qcXqvxqhFdQyBDk4UvvF0sw6IM2TDTd5UTFFc6BHUO",
+    # debug=True)
     pass
 
 
