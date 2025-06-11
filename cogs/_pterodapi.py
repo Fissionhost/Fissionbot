@@ -214,7 +214,7 @@ class Users:
 
 
 class Nodes:
-    def __init(
+    def __init__(
         self, address: str, application_token: str, user_token: str,
         debug=False
     ):
@@ -249,7 +249,7 @@ class Nodes:
 
 
 class Servers:
-    def __init(
+    def __init__(
         self, address: str, application_token: str, user_token: str,
         debug=False
     ):
@@ -419,7 +419,7 @@ class Servers:
 
 
 class API:
-    def __init(
+    def __init__(
         self, address: str, application_token: str, user_token: str,
         debug=False
     ):
