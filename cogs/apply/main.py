@@ -13,7 +13,7 @@ from nextcord import (
 )
 from cogs import _pterodapi
 from cogs._errors import HandleError
-from config import ERROR_CHANNEL
+from config import ERROR_CHANNEL, APPLICATION_CHANNEL_ID
 
 
 class Apply(commands.Cog):
@@ -196,12 +196,11 @@ class Apply(commands.Cog):
 				color=Color.red()
 			))
 		
-		servertype, serversubtype, reasoning, origination, email = self.bot.application_details[interaction.user.id]
+		servertype, serversubtype, reasoning, origination, email = self.bot.application_details[interaction.user.id].values()
 		embed.add_field(name="Server Type",value=servertype)
 		embed.add_field(name="Server Subtype",value=serversubtype)
 
-		if not interaction.response.is_done():
-			await msg.edit(embed=embed)
+		await msg.edit(embed=embed)
 
 		embed = Embed(
 			title="New application",
@@ -215,8 +214,8 @@ class Apply(commands.Cog):
 		embed.add_field(name="Origination",value=origination)
 		embed.add_field(name="Email",value=email)
 
-		staff_channel = self.bot.get_channel(1374083920743760076)
-		if not staff_channel: await self.bot.fetch_channel(1382395178291167272)
+		APPLICATION_CHANNEL = self.bot.get_channel(APPLICATION_CHANNEL_ID)
+		if not APPLICATION_CHANNEL: await self.bot.fetch_channel(APPLICATION_CHANNEL_ID)
 		view = ui.View()
 		accept_button = ui.Button(label="Accept", style=ButtonStyle.success)
 		deny_button = ui.Button(label="Deny", style=ButtonStyle.danger)
@@ -226,8 +225,8 @@ class Apply(commands.Cog):
 		view.add_item(accept_button)
 		view.add_item(deny_button)
 
-		if staff_channel:
-			msg = await staff_channel.send(embed=embed, view=view)
+		if APPLICATION_CHANNEL:
+			msg = await APPLICATION_CHANNEL.send(embed=embed, view=view)
 		else:
 			print(f"[Error] Staff channel not found!")
 
