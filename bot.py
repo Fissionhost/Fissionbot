@@ -32,7 +32,6 @@ logger.addHandler(handler)
 logging.getLogger("nextcord").setLevel(logging.WARNING)
 logging.getLogger("discord").setLevel(logging.WARNING)
 
-
 class Bot(commands.Bot):
     def __init__(self, command_prefix, intents):
         super().__init__(command_prefix=command_prefix, intents=intents)
@@ -41,14 +40,15 @@ class Bot(commands.Bot):
 
     async def SaveDetails(self, userID: int, key: str, value: any) -> bool:
         try:
-            self.application_details[userID] = {}
-            userDetails = self.application_details[userID]
-            userDetails[key] = value
+            if userID not in self.application_details:
+                self.application_details[userID] = {}
+
+            self.application_details[userID][key] = value
 
             with open(APPLICATION_DETAILS, "r") as file:
                 data = load(file)
 
-            data[userID] = userDetails
+            data[userID] = self.application_details[userID]
 
             with open(APPLICATION_DETAILS, "w") as file:
                 dump(data, file, indent=4)
@@ -63,7 +63,6 @@ class Bot(commands.Bot):
 intents = nextcord.Intents.default()
 bot = Bot(command_prefix="!", intents=intents)
 bot.debuggingMode = True
-
 
 @bot.event
 async def on_ready():

@@ -1,8 +1,18 @@
 {
     "753668246972137513": {
-        "nest": "Discord Bot"
+        "nest": "Discord Bot",
+        "subtype": "Python",
+        "reasoning": "ehr",
+        "origination": "aehr"
+    },
+    "anghad": {
+        "Email": "aerg"
     },
     "753668246972137513": {
-        "subtype": "Python"
+        "nest": "Discord Bot",
+        "subtype": "Python",
+        "reasoning": "ehr",
+        "origination": "aehr",
+        "email": "aehr"
     }
 }
