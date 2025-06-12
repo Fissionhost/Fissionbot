@@ -18,7 +18,7 @@ class Reload(commands.Cog):
             choices=("cogs.apply", "cogs.reload"),
         ),
     ):
-        if not interaction.user.guild_permissions.administrator:
+        if not interaction.member.guild_permissions.administrator:
             logger.error(
                 "Extension [{extension}] wasn't reloaded because "
                 f"[{interaction.user.name}] didn't have sufficient permission"

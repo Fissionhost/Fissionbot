@@ -3,6 +3,7 @@ from nextcord.ext import commands
 import os
 import logging
 import colorlog
+import aiosqlite
 from dotenv import load_dotenv
 from os import getenv
 from config import APPLICATION_DETAILS
@@ -32,11 +33,13 @@ logger.addHandler(handler)
 logging.getLogger("nextcord").setLevel(logging.WARNING)
 logging.getLogger("discord").setLevel(logging.WARNING)
 
+
 class Bot(commands.Bot):
     def __init__(self, command_prefix, intents):
         super().__init__(command_prefix=command_prefix, intents=intents)
         self.application_details = {}
         self.debuggingMode = False
+        self.db: aiosqlite.Connection = None
 
     async def SaveDetails(self, userID: int, key: str, value: any) -> bool:
         try:
@@ -61,13 +64,26 @@ class Bot(commands.Bot):
 
 
 intents = nextcord.Intents.default()
+intents.members = True
+# Command prefix is necessary for some reason
 bot = Bot(command_prefix="!", intents=intents)
 bot.debuggingMode = True
 
-@bot.event
-async def on_ready():
-    logger.info(f"Logged in as {bot.user}")
 
+@bot.event
+async def on_ready() -> None:
+    bot.db = await aiosqlite.connect("fissionbot.db")
+    await bot.db.execute("CREATE TABLE IF NOT EXISTS referrals ("
+                         "referrer_id BIGINT, count INTEGER DEFAULT 0)")
+
+    # load_application_details()
+    # Future task
+
+    logger.info(f"Logged in as {bot.user.name} - {bot.user.id}")
+    return await bot.change_presence(
+        activity=nextcord.Activity(
+            type=nextcord.ActivityType.watching,
+            name="EXPERIMENTAL"))
 
 # Manually load apply since it's in a subfolder
 bot.load_extension("cogs.apply")
@@ -76,21 +92,5 @@ bot.load_extension("cogs.apply")
 for filename in os.listdir("./cogs"):
     if filename.endswith(".py") and not filename.startswith("_"):
         bot.load_extension(f"cogs.{filename[:-3]}")
-
-
-@bot.slash_command()
-async def restartcommand(ctx, extension: str):
-    """Restart a specific command by reloading its extension."""
-    try:
-        bot.unload_extension(extension)
-        bot.load_extension(extension)
-        await ctx.send(
-            f"Extension `{extension}` has been restarted successfully."
-        )
-    except Exception as e:
-        await ctx.send(
-            f"Failed to restart extension `{extension}`: {e}"
-        )
-
 
 bot.run(getenv("DISCORD_TOKEN"))
