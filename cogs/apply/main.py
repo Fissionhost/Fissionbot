@@ -47,9 +47,13 @@ class Apply(commands.Cog):
             choices=("Discord Bot", "Minecraft"),
         ),
     ):
+        if int(interaction.user.id) in self.bot.application_details:
+            await self.bot.DeleteUserDetails(
+                userID=int(interaction.user.id)
+            )
 
         if e := await self.bot.SaveDetails(
-            userID=interaction.user.id, key="nest", value=type
+            userID=int(interaction.user.id), key="nest", value=type
         ):
             ErrorChannel = self.bot.get_channel(ERROR_CHANNEL_ID)
             if not ErrorChannel:
@@ -137,7 +141,7 @@ class Apply(commands.Cog):
 
     async def ServerTypeCallback(self, interaction: Interaction) -> None:
         await self.bot.SaveDetails(
-            userID=interaction.user.id,
+            userID=int(interaction.user.id),
             key="subtype",
             value=interaction.data["values"][0],
         )
@@ -195,13 +199,13 @@ class Apply(commands.Cog):
                 value=value,
                 inline=False)
             await self.bot.SaveDetails(
-                interaction.user.id,
+                int(interaction.user.id),
                 idx_to_keyname[idx],
                 value=value
             )
 
-        if len(self.bot.application_details[interaction.user.id]) != 5:
-            self.bot.application_details[interaction.user.id] = None
+        if len(self.bot.application_details[int(interaction.user.id)]) != 5:
+            self.bot.application_details[int(interaction.user.id)] = None
             return await msg.edit(embed=Embed(
                 title="Application Details are malformed",
                 description="I've reset your application. Try again!",
@@ -209,7 +213,7 @@ class Apply(commands.Cog):
             ))
 
         (servertype, serversubtype, reasoning, origination, email
-         ) = self.bot.application_details[interaction.user.id].values()
+         ) = self.bot.application_details[int(interaction.user.id)].values()
 
         embed.add_field(name="Server Type", value=servertype)
         embed.add_field(name="Server Subtype", value=serversubtype)
@@ -249,7 +253,7 @@ class Apply(commands.Cog):
         if APPLICATION_CHANNEL:
             msg = await APPLICATION_CHANNEL.send(embed=embed, view=view)
         else:
-            print("[Error] Staff channel not found!")
+            self.bot.logger.warning("[Error] Staff channel not found!")
 
         return
 
@@ -275,11 +279,12 @@ class Apply(commands.Cog):
         idx_to_key = {0: "name", 1: "surname", 2: "referrer"}
         for idx, item in enumerate(interaction.data["components"]):
             value = item["components"][0]["value"]
-            self.bot.SaveDetails(interaction.user.id, idx_to_key[idx], value)
+            await self.bot.SaveDetails(int(interaction.user.id),
+                                       idx_to_key[idx],
+                                       value)
 
         username = await self.api.Users.mop(interaction.user.name)
-        UserDetails = self.bot.application_details[interaction.user.id]
-        print(UserDetails)
+        UserDetails = self.bot.application_details[int(interaction.user.id)]
         account_response = loads(await self.api.Users.create_user(
             username=username,
             email=UserDetails["email"],
@@ -294,9 +299,9 @@ class Apply(commands.Cog):
                 await self.bot.fetch_channel(ERROR_CHANNEL_ID)
             await ERROR_CHANNEL.send(embed=Embed(
                 title="An error occured while creating an account",
-                description=account_response,
+                description=str(account_response),
                 color=Color.red()
-            ).add_field(name="User ID", value=interaction.user.id))
+            ).add_field(name="User ID", value=int(interaction.user.id)))
 
             return await msg.edit(embed=Embed(
                 title="An unexpected error occured!",
@@ -317,8 +322,11 @@ class Apply(commands.Cog):
         await msg.edit(embed=embed)
 
         # Creating the server for the account
+        UserDetails["egg"] = _pterodapi.egg_ids[(
+            UserDetails["nest"], UserDetails["subtype"]
+        )]
         server_creation_response = loads(await self.api.Servers.create_server(
-            egg=UserDetails[interaction.user.id]["egg"],
+            egg=UserDetails["egg"],
             user_id=account_response["attributes"]["id"]))
 
         # Error checking
@@ -330,7 +338,7 @@ class Apply(commands.Cog):
                 title="An error occured while creating a server",
                 description=server_creation_response,
                 color=Color.red()
-            ).add_field(name="User ID", value=interaction.user.id))
+            ).add_field(name="User ID", value=int(interaction.user.id)))
 
             embed = Embed(
                 title="Error",
@@ -376,7 +384,8 @@ class Apply(commands.Cog):
 
         embed = Embed(
             title="Server created!",
-            description=f"<@{interaction.user.id}> successfully made a server",
+            description=f"<@{int(interaction.user.id)}>"
+                        " successfully made a server",
             color=Color.green()
         )
         embed.add_field(
@@ -421,7 +430,7 @@ class Apply(commands.Cog):
         pterodactyl_id = await self.api.Users.get_id(await self.api.Users.mop(
             referrer.name))
         if pterodactyl_id is None:
-            return print(
+            return self.bot.logger.warning(
                 f"Could not find Pterodactyl ID for user {referrer.name}.")
 
         servers_data = loads(await self.api.Users.get_servers(pterodactyl_id))
@@ -429,7 +438,8 @@ class Apply(commands.Cog):
         servers = servers_relationships["servers"]["data"]
         server = servers[0] if servers else None
         if server is None:
-            return print(f"No servers found for user {referrer.name}.")
+            return self.bot.logger.warning("No servers found for user "
+                                           f"{referrer.name}.")
 
         server_attribs = server["attributes"]
 
@@ -457,7 +467,7 @@ class Apply(commands.Cog):
             await self.api.Servers.edit_server_build(server_attribs["id"],
                                                      payload)
         else:
-            print(
+            self.bot.logger.info(
                 f"No rewards to apply for this referral. {referrer.name} is at"
                 " invites: {count}")
 
@@ -503,7 +513,7 @@ class Apply(commands.Cog):
         return await interaction.response.send_modal(modal)
 
     async def accept_callback(self, interaction: Interaction):
-        if interaction.user.id not in ADMIN_IDS:
+        if int(interaction.user.id) not in ADMIN_IDS:
             return await interaction.response.send_message(
                 "Only admins can do this!"
             )
@@ -523,8 +533,8 @@ class Apply(commands.Cog):
             custom_id="create_server")
 
         view = ui.View()
-        create_server_button.callback = self.AccountCreationModal
         view.add_item(create_server_button)
+        create_server_button.callback = None
 
         await user.send(embed=Embed(
             title="Your application was accepted!",
@@ -540,7 +550,7 @@ class Apply(commands.Cog):
         return await interaction.message.edit(embed=embed, view=None)
 
     async def deny_callback(self, interaction: Interaction):
-        if interaction.user.id not in ADMIN_IDS:
+        if int(interaction.user.id) not in ADMIN_IDS:
             return await interaction.response.send_message(
                 "Only admins can do this!"
             )
@@ -577,7 +587,7 @@ class Apply(commands.Cog):
                 return await self.accept_callback(interaction)
             elif interaction.data.get("custom_id") == "deny_btn":
                 return await self.deny_callback(interaction)
-            elif interaction.data["custom_id"] == "create_server":
+            elif interaction.data.get("custom_id") == "create_server":
                 await self.AccountCreationModal(interaction)
 
         pass

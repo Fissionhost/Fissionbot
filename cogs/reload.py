@@ -1,6 +1,6 @@
 from nextcord.ext import commands
 from nextcord import Interaction, SlashOption, Embed, Color, slash_command
-from bot import logger
+from config import ADMIN_IDS
 
 
 class Reload(commands.Cog):
@@ -18,8 +18,8 @@ class Reload(commands.Cog):
             choices=("cogs.apply", "cogs.reload"),
         ),
     ):
-        if not interaction.member.guild_permissions.administrator:
-            logger.error(
+        if interaction.user.id not in ADMIN_IDS:
+            self.bot.logger.error(
                 "Extension [{extension}] wasn't reloaded because "
                 f"[{interaction.user.name}] didn't have sufficient permission"
             )
@@ -34,14 +34,14 @@ class Reload(commands.Cog):
         try:
             self.bot.unload_extension(extension)
             self.bot.load_extension(extension)
-            logger.warning(f"Extension [{extension}] was reloaded")
+            self.bot.logger.warning(f"Extension [{extension}] was reloaded")
 
             return await interaction.response.send_message(
                 f"Extension `{extension}` has been reloaded successfully.",
                 ephemeral=True,
             )
         except Exception as e:
-            logger.warning(
+            self.bot.logger.warning(
                 f"Extension [{extension}] failed to reloaded: {e}"
             )
             return await interaction.response.send_message(
