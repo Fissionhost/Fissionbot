@@ -109,6 +109,7 @@ async def on_ready() -> None:
 
 # Manually load apply since it's in a subfolder
 bot.load_extension("cogs.apply")
+bot.load_extension("cogs.admin")
 
 # Optionally auto-load others
 for filename in os.listdir("./cogs"):

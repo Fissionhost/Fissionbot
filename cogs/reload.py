@@ -15,7 +15,7 @@ class Reload(commands.Cog):
             name="extension",
             description="Choose a command to reload",
             required=True,
-            choices=("cogs.apply", "cogs.reload"),
+            choices=("cogs.apply", "cogs.reload", "cogs.admin"),
         ),
     ):
         if interaction.user.id not in ADMIN_IDS:

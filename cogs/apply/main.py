@@ -322,11 +322,8 @@ class Apply(commands.Cog):
         await msg.edit(embed=embed)
 
         # Creating the server for the account
-        UserDetails["egg"] = _pterodapi.egg_ids[(
-            UserDetails["nest"], UserDetails["subtype"]
-        )]
         server_creation_response = loads(await self.api.Servers.create_server(
-            egg=UserDetails["egg"],
+            egg=[UserDetails["nest"], UserDetails["subtype"]],
             user_id=account_response["attributes"]["id"]))
 
         # Error checking
@@ -336,7 +333,7 @@ class Apply(commands.Cog):
                 await self.bot.fetch_channel(ERROR_CHANNEL_ID)
             await ERROR_CHANNEL.send(embed=Embed(
                 title="An error occured while creating a server",
-                description=server_creation_response,
+                description=str(server_creation_response),
                 color=Color.red()
             ).add_field(name="User ID", value=int(interaction.user.id)))
 
@@ -344,11 +341,7 @@ class Apply(commands.Cog):
                 title="Error",
                 description="There was an error creating your server! Staff "
                 "will be notified",
-                color=Color.red()).add_field(
-                name="Error",
-                value=str(
-                    server_creation_response["errors"]),
-                inline=False)
+                color=Color.red())
             return await msg.edit(embed=embed)
 
         # Generate a random password
@@ -396,11 +389,12 @@ class Apply(commands.Cog):
         await self.HandleReferral(interaction, UserDetails["referrer"])
 
     async def HandleReferral(self, interaction: Interaction, referrer_name):
-        referrer = self.bot.get_guild(
-            981206488540389386).get_member_named(referrer_name)
-        if not referrer:
-            await self.bot.fetch_guild(981206488540389386).get_member_named(
+        GUILD = self.bot.get_guild(981206488540389386)
+        if not GUILD:
+            referrer = await self.bot.fetch_guild(981206488540389386).get_member_named(  # noqa: E501
                 referrer_name)
+        else:
+            referrer = GUILD.get_member_named(referrer_name)  # noqa: E501
 
         cursor = await self.bot.db.execute("SELECT COUNT FROM referrals WHERE "
                                            "referrer_id = ?", (referrer.id,))
