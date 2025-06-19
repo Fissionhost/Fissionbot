@@ -47,9 +47,13 @@ class Bot(commands.Bot):
 
     async def SaveDetails(self, userID: int, key: str, value: any) -> None | Exception:  # noqa: E501
         try:
-            if userID not in self.application_details:
-                self.application_details[userID] = {}
+            # Only initialize if not present or not a dict
+            if userID not in self.application_details or not isinstance(self.application_details[userID], dict):  # noqa: E501
+                self.application_details[userID] = {
+                    "application": "started"
+                }
 
+            # Now safely set the key
             self.application_details[userID][key] = value
 
             with open(APPLICATION_DETAILS, "w") as file:
@@ -57,7 +61,7 @@ class Bot(commands.Bot):
 
             if self.debuggingMode:
                 logger.debug("[SaveDetails] Application info:"
-                             f" {bot.application_details}")
+                             f" {self.application_details}")
 
             return None
         except Exception as e:
@@ -67,13 +71,15 @@ class Bot(commands.Bot):
 
     async def DeleteUserDetails(self, userID: int) -> None | Exception:
         try:
-            self.application_details[userID] = None
+            if userID in self.application_details:
+                del self.application_details[userID]
+
             with open(APPLICATION_DETAILS, "w") as file:
                 dump(self.application_details, file, indent=4)
 
             if self.debuggingMode:
                 logger.debug("[DeleteUserDetails] Application info:"
-                             f" {bot.application_details}")
+                             f" {self.application_details}")
 
             return None
         except Exception as e:
