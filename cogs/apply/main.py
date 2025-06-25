@@ -386,7 +386,22 @@ class Apply(commands.Cog):
             value=account_response["attributes"]["id"])
         await APPLICATION_SUCCESS_CHANNEL.send(embed=embed)
 
-        await self.HandleReferral(interaction, UserDetails["referrer"])
+        try:
+            await self.HandleReferral(interaction, UserDetails["referrer"])
+        except Exception as e:
+            await interaction.followup.send(embed=Embed(
+                title="Note",
+                description="Referrals through the bot "
+                            "currently aren't working.",
+                color=Color.orange()
+            ).add_field(
+                name="How do they claim invite rewards?",
+                value="Ask them to create a ticket"
+            ))
+
+            return self.bot.logger.warning(
+                f"Expected Exception in Referral: {e}"
+            )
 
     async def HandleReferral(self, interaction: Interaction, referrer_name):
         GUILD = self.bot.get_guild(981206488540389386)

@@ -46,8 +46,10 @@ class Bot(commands.Bot):
             else logger.setLevel(logging.INFO)
 
     async def SaveDetails(self, userID: int, key: str, value: any) -> None | Exception:  # noqa: E501
+        userID = int(userID)
+
         try:
-            if userID not in self.application_details:
+            if userID not in self.application_details or self.application_details[userID] is None:  # noqa: E501
                 self.application_details[userID] = {}
 
             self.application_details[userID][key] = value

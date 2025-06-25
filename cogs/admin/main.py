@@ -18,7 +18,7 @@ class Admin(commands.Cog):
             address="https://panel.fissionhost.org",
             application_token=(
                 "ptla_4fB6pnehpUVKDEUY6L3IkFbKNfFuzFT4PXl9Gd6iBqp"
-            ),  # Flake8's fault
+            ),
             user_token="ptlc_1qcXqvxqhFdQyBDk4UvvF0sw6IM2TDTd5UTFFc6BHUO",
             debug=True,
         )
