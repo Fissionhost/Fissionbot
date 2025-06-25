@@ -204,7 +204,7 @@ class Apply(commands.Cog):
                 value=value
             )
 
-        if len(self.bot.application_details[int(interaction.user.id)]) != 6:
+        if len(self.bot.application_details[int(interaction.user.id)]) != 5:
             self.bot.logger.warning(
                 "Malformed application: {}".format(
                     self.bot.application_details[int(interaction.user.id)]
@@ -221,7 +221,7 @@ class Apply(commands.Cog):
                 color=Color.red()
             ))
 
-        (_, servertype, serversubtype, reasoning, origination, email
+        (servertype, serversubtype, reasoning, origination, email
          ) = self.bot.application_details[int(interaction.user.id)].values()
 
         embed.add_field(name="Server Type", value=servertype)
@@ -292,7 +292,7 @@ class Apply(commands.Cog):
                                        idx_to_key[idx],
                                        value)
 
-        username = await self.api.Users.mop(interaction.user.name)
+        username = self.api.Users.mop(interaction.user.name)
         UserDetails = self.bot.application_details[int(interaction.user.id)]
         account_response = loads(await self.api.Users.create_user(
             username=username,
