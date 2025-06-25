@@ -204,15 +204,24 @@ class Apply(commands.Cog):
                 value=value
             )
 
-        if len(self.bot.application_details[int(interaction.user.id)]) != 5:
-            self.bot.application_details[int(interaction.user.id)] = None
+        if len(self.bot.application_details[int(interaction.user.id)]) != 6:
+            self.bot.logger.warning(
+                "Malformed application: {}".format(
+                    self.bot.application_details[int(interaction.user.id)]
+                )
+            )
+
+            self.bot.application_details[int(interaction.user.id)] = {
+                "application": "started"
+            }
+
             return await msg.edit(embed=Embed(
                 title="Application Details are malformed",
                 description="I've reset your application. Try again!",
                 color=Color.red()
             ))
 
-        (servertype, serversubtype, reasoning, origination, email
+        (_, servertype, serversubtype, reasoning, origination, email
          ) = self.bot.application_details[int(interaction.user.id)].values()
 
         embed.add_field(name="Server Type", value=servertype)
@@ -404,6 +413,8 @@ class Apply(commands.Cog):
             )
 
     async def HandleReferral(self, interaction: Interaction, referrer_name):
+        return "TODO"
+
         GUILD = self.bot.get_guild(981206488540389386)
         if not GUILD:
             referrer = await self.bot.fetch_guild(981206488540389386).get_member_named(  # noqa: E501

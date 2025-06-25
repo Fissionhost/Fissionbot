@@ -59,7 +59,7 @@ class Bot(commands.Bot):
 
             if self.debuggingMode:
                 logger.debug("[SaveDetails] Application info:"
-                             f" {bot.application_details}")
+                             f" {self.application_details}")
 
             return None
         except Exception as e:
@@ -69,13 +69,15 @@ class Bot(commands.Bot):
 
     async def DeleteUserDetails(self, userID: int) -> None | Exception:
         try:
-            self.application_details[userID] = None
+            if userID in self.application_details:
+                del self.application_details[userID]
+
             with open(APPLICATION_DETAILS, "w") as file:
                 dump(self.application_details, file, indent=4)
 
             if self.debuggingMode:
                 logger.debug("[DeleteUserDetails] Application info:"
-                             f" {bot.application_details}")
+                             f" {self.application_details}")
 
             return None
         except Exception as e:
