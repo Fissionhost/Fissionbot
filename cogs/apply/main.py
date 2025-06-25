@@ -204,15 +204,24 @@ class Apply(commands.Cog):
                 value=value
             )
 
-        if len(self.bot.application_details[int(interaction.user.id)]) != 5:
-            self.bot.application_details[int(interaction.user.id)] = None
+        if len(self.bot.application_details[int(interaction.user.id)]) != 6:
+            self.bot.logger.warning(
+                "Malformed application: {}".format(
+                    self.bot.application_details[int(interaction.user.id)]
+                )
+            )
+
+            self.bot.application_details[int(interaction.user.id)] = {
+                "application": "started"
+            }
+
             return await msg.edit(embed=Embed(
                 title="Application Details are malformed",
                 description="I've reset your application. Try again!",
                 color=Color.red()
             ))
 
-        (servertype, serversubtype, reasoning, origination, email
+        (_, servertype, serversubtype, reasoning, origination, email
          ) = self.bot.application_details[int(interaction.user.id)].values()
 
         embed.add_field(name="Server Type", value=servertype)
@@ -386,9 +395,26 @@ class Apply(commands.Cog):
             value=account_response["attributes"]["id"])
         await APPLICATION_SUCCESS_CHANNEL.send(embed=embed)
 
-        await self.HandleReferral(interaction, UserDetails["referrer"])
+        try:
+            await self.HandleReferral(interaction, UserDetails["referrer"])
+        except Exception as e:
+            await interaction.followup.send(embed=Embed(
+                title="Note",
+                description="Referrals through the bot "
+                            "currently aren't working.",
+                color=Color.orange()
+            ).add_field(
+                name="How do they claim invite rewards?",
+                value="Ask them to create a ticket"
+            ))
+
+            return self.bot.logger.warning(
+                f"Expected Exception in Referral: {e}"
+            )
 
     async def HandleReferral(self, interaction: Interaction, referrer_name):
+        return "TODO"
+
         GUILD = self.bot.get_guild(981206488540389386)
         if not GUILD:
             referrer = await self.bot.fetch_guild(981206488540389386).get_member_named(  # noqa: E501

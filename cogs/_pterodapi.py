@@ -110,6 +110,7 @@ class Users:
 
     async def get_details(self, username: str) -> str:
         """Fetches user details by username."""
+        username = self.mop(username)
         url = (
             f"{self.address}/api/application/users?filter[username]={username}"
         )
@@ -126,6 +127,7 @@ class Users:
 
     async def get_id(self, username: str):
         """Fetches the user ID for a given username."""
+        username = self.mop(username)
         data = await self.get_details(username)
         attribs = loads(data)["data"]
         return attribs[0]["attributes"]["id"] if attribs != [] else None
@@ -134,6 +136,7 @@ class Users:
         self, username: str, email: str, firstname: str, surname: str
     ) -> str:
         """Creates a new user with the given details."""
+        username = self.mop(username)
         url = f"{self.address}/api/application/users"
         payload = (
             '{{"email": "{}","username": "{}","first_name": "{}",'
@@ -164,6 +167,7 @@ class Users:
         password: str,
     ):
         """Updates user details including password."""
+        username = self.mop(username)
         url = f"{self.address}/api/application/users/{id}"
         payload = (
             '{{"email": "{}","username": "{}","first_name": "{}",'
@@ -177,7 +181,7 @@ class Users:
             ) as response:
                 return await response.text()
 
-    async def mop(self, username: str):
+    def mop(self, username: str):
         # My sister came up with this function name
         """Cleans the name of a user so it can be used in pterodactyl."""
         invalid_chars = [
@@ -309,6 +313,13 @@ class Servers:
             "startup": "java -jar server.jar",
             "environment": {
                 "BUNGEE_VERSION": "latest",
+                "FABRIC_VERSION": "latest",
+                "LOADER_VERSION": "latest",
+                "VANILLA_VERSION": "latest",
+                "NUKKIT_VERSION": "latest",
+                "POCKETMINE_VERSION": "latest",
+                "MC_VERSION": "latest",
+                "BUILD_TYPE": "latest",
                 "SERVER_JARFILE": "server.jar",
                 "APP_PY": "app.py",
                 "AUTO_UPDATE": False,
@@ -329,6 +340,7 @@ class Servers:
             "feature_limits": {"databases": 2, "backups": 3},
             "allocation": {"default": allocation},
         }
+
         bot_payload = {
             "name": "{}-{}".format(egg[0].replace(" ", "-"), egg[1]),
             "user": user_id,
@@ -343,6 +355,7 @@ class Servers:
                 "USER_UPLOAD": False,
                 "PY_FILE": "app.py",
                 "REQUIREMENTS_FILE": "requirements.txt",
+                "MAIN_FILE": "index.js" if egg_tuple == ("Discord Bot", "Javascript") else "",  # noqa: E501
             },
             "limits": {
                 "memory": 512,

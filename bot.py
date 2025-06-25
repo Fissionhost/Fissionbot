@@ -46,8 +46,10 @@ class Bot(commands.Bot):
             else logger.setLevel(logging.INFO)
 
     async def SaveDetails(self, userID: int, key: str, value: any) -> None | Exception:  # noqa: E501
+        userID = int(userID)
+
         try:
-            if userID not in self.application_details:
+            if userID not in self.application_details or self.application_details[userID] is None:  # noqa: E501
                 self.application_details[userID] = {}
 
             self.application_details[userID][key] = value
@@ -57,7 +59,7 @@ class Bot(commands.Bot):
 
             if self.debuggingMode:
                 logger.debug("[SaveDetails] Application info:"
-                             f" {bot.application_details}")
+                             f" {self.application_details}")
 
             return None
         except Exception as e:
@@ -67,13 +69,15 @@ class Bot(commands.Bot):
 
     async def DeleteUserDetails(self, userID: int) -> None | Exception:
         try:
-            self.application_details[userID] = None
+            if userID in self.application_details:
+                del self.application_details[userID]
+
             with open(APPLICATION_DETAILS, "w") as file:
                 dump(self.application_details, file, indent=4)
 
             if self.debuggingMode:
                 logger.debug("[DeleteUserDetails] Application info:"
-                             f" {bot.application_details}")
+                             f" {self.application_details}")
 
             return None
         except Exception as e:
@@ -105,7 +109,7 @@ async def on_ready() -> None:
     return await bot.change_presence(
         activity=nextcord.Activity(
             type=nextcord.ActivityType.watching,
-            name="EXPERIMENTAL"))
+            name="Fissionhost"))
 
 # Manually load apply since it's in a subfolder
 bot.load_extension("cogs.apply")
