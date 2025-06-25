@@ -109,7 +109,7 @@ async def on_ready() -> None:
     return await bot.change_presence(
         activity=nextcord.Activity(
             type=nextcord.ActivityType.watching,
-            name="EXPERIMENTAL"))
+            name="Fissionhost"))
 
 # Manually load apply since it's in a subfolder
 bot.load_extension("cogs.apply")
