@@ -15,39 +15,41 @@ api = API(
 
 async def send_messages(messages: list[list[str]]):
     print(messages)
-    if len(messages) != 1:
-        data = {
-            "embeds": [
-                {
-                    "title": "Some tests failed",
-                    "color": 15158332,
-                    "description": "The bot will not start until these issues are fixed!",  # noqa: E501
-                    "fields": [
-                        {"name": f"Test {i+1}", "value": str(msg), "inline": False}  # noqa: E501
-                        for i, msg in enumerate(messages)
-                    ]
-                }
-            ]
-        }
-        print(data)
+    for specific_messages in messages:
+        if len(specific_messages) != 0:
+            data = {
+                "embeds": [
+                    {
+                        "title": "Some tests failed",
+                        "color": 15158332,
+                        "description": "The bot will not start until these issues are fixed!",  # noqa: E501
+                        "fields": [
+                            {
+                                "name": f"Test #{num+1}",
+                                "value": str(message),
+                                "inline": False
+                            }
+                            for num, message in enumerate(messages)  # noqa: E501
+                        ]
+                    }
+                ]
+            }
 
-        response = post(ISSUEBOT_URL, json=data)
-        if response.status_code != 204:
-            print(f'Failed to send message: {response.status_code}')
-        return response.status_code
-        # return 400
-    else:
-        return 0
+            response = post(ISSUEBOT_URL, json=data)
+            if response.status_code != 204:
+                print(f'Failed to send message: {response.status_code}')
+            return response.status_code
+            # return 400
+    return 0
 
 
 async def test_nodes():
     messages = []
-    tests_for = ['public', 'no_maintenance', 'memory', 'disk', 'fake_test']
+    tests_for = ['public', 'memory', 'disk']
     tests_passed = []
 
     warning_msg = {
         'public': 'There are no public nodes!',
-        'no_maintenance': 'All nodes are in maintenance!',
         'memory': 'A node is running out of available memory!',
         'disk': 'A node is running out of available disk space!',
         'fake_test': 'This is just a fake test!'
@@ -68,9 +70,6 @@ async def test_nodes():
         if attribs['public'] and 'public' not in tests_passed:
             tests_passed.append('public')
 
-        if not attribs['maintenance_mode'] and 'maintenance_mode' not in tests_passed:  # noqa: E501
-            tests_passed.append('maintenance_mode')
-
         if used_memory <= max_memory - 15000 and 'memory' not in tests_passed:
             tests_passed.append('memory')
 
@@ -80,8 +79,16 @@ async def test_nodes():
     for test in tests_for:
         if test not in tests_passed:
             print(test, 'test failed!')
-            print(attribs['maintenance_mode'])
             messages.append(warning_msg[test])
+
+    return messages
+
+
+async def test_servers():
+    messages = []
+    response = (await api.Servers.get_available_allocations(1))
+    if len(response) <= 0:
+        messages.append("There are no allocations available!")
 
     return messages
 
@@ -89,7 +96,9 @@ async def test_nodes():
 async def Tester():
     messages = []
     messages.append(await test_nodes())
+    messages.append(await test_servers())
 
     response = await send_messages(messages)
+    print(response)
 
     return response
