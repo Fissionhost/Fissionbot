@@ -3,3 +3,4 @@ colorama
 colorlog
 python-dotenv
 aiosqlite
+requests

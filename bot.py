@@ -4,10 +4,12 @@ import os
 import logging
 import colorlog
 import aiosqlite
+import asyncio
 from dotenv import load_dotenv
 from os import getenv, path
 from config import APPLICATION_DETAILS
 from json import load, dump
+from api_periodic_tests import Tester
 
 load_dotenv()
 
@@ -111,13 +113,25 @@ async def on_ready() -> None:
             type=nextcord.ActivityType.watching,
             name="Fissionhost"))
 
-# Manually load apply since it's in a subfolder
-bot.load_extension("cogs.apply")
-bot.load_extension("cogs.admin")
 
-# Optionally auto-load others
-for filename in os.listdir("./cogs"):
-    if filename.endswith(".py") and not filename.startswith("_"):
-        bot.load_extension(f"cogs.{filename[:-3]}")
+def main():
+    bot.load_extension("cogs.apply")
+    bot.load_extension("cogs.admin")
 
-bot.run(getenv("DISCORD_TOKEN"))
+    for filename in os.listdir("./cogs"):
+        if filename.endswith(".py") and not filename.startswith("_"):
+            bot.load_extension(f"cogs.{filename[:-3]}")
+
+    print("Testing the api, please be patient...")
+    result = asyncio.run(Tester())
+
+    if result == 0:
+        bot.run(getenv("DISCORD_TOKEN"))
+    elif result == 204:
+        print("The tests failed and the results have been posted.")
+    else:
+        print("The tests failed and the results failed to send.")
+
+
+if __name__ == "__main__":
+    main()
