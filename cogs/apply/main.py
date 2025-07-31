@@ -28,7 +28,7 @@ class Apply(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.api = _pterodapi.API(
-            address="https://panel.fissionhost.org",
+            address="https://fissionhost.dpdns.org",
             application_token=(
                 "ptla_4fB6pnehpUVKDEUY6L3IkFbKNfFuzFT4PXl9Gd6iBqp"
             ),  # Flake8's fault
@@ -368,7 +368,7 @@ class Apply(commands.Cog):
         view.add_item(
             ui.Button(
                 label="Panel",
-                url="https://panel.fissionhost.org"))
+                url="https://fissionhost.dpdns.org"))
 
         await msg.edit(embed=(Embed(
             title="Success",
