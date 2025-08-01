@@ -93,12 +93,16 @@ async def test_servers():
     return messages
 
 
-async def Tester():
+async def Tester(DEBUGGING_MODE):
     messages = []
     messages.append(await test_nodes())
     messages.append(await test_servers())
 
-    response = await send_messages(messages)
-    print(response)
+    if not DEBUGGING_MODE:
+        return await send_messages(messages)
 
-    return response
+    with open('test_result.txt', 'w') as f:
+        f.write(str(messages))
+
+    print("Debugging mode enabled! No messages will be sent to discord")
+    return 0

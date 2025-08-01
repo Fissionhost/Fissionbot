@@ -7,11 +7,12 @@ import aiosqlite
 import asyncio
 from dotenv import load_dotenv
 from os import getenv, path
-from config import APPLICATION_DETAILS
+from config import APPLICATION_DETAILS, APPLICATIONS
 from json import load, dump
 from api_periodic_tests import Tester
 
 load_dotenv()
+DEBUGGING_MODE = True
 
 _handler = colorlog.StreamHandler()
 _handler.setFormatter(
@@ -91,7 +92,7 @@ class Bot(commands.Bot):
 _intents = nextcord.Intents.default()
 _intents.members = True
 # Command prefix is necessary for some reason
-bot = Bot(command_prefix="!", intents=_intents, debuggingMode=True)
+bot = Bot(command_prefix="!", intents=_intents, debuggingMode=DEBUGGING_MODE)
 
 
 @bot.event
@@ -101,6 +102,10 @@ async def on_ready() -> None:
                          "referrer_id BIGINT, count INTEGER DEFAULT 0)")
 
     logger.info(f"Logged in as {bot.user.name} - {bot.user.id}")
+
+    if not APPLICATIONS:
+        logger.warning("Applications are disabled!")
+
     if path.exists(APPLICATION_DETAILS):
         with open(APPLICATION_DETAILS, "r") as f:
             bot.application_details = {int(k): v for k, v in load(f).items()}
@@ -123,7 +128,7 @@ def main():
             bot.load_extension(f"cogs.{filename[:-3]}")
 
     print("Testing the api, please be patient...")
-    result = asyncio.run(Tester())
+    result = asyncio.run(Tester(DEBUGGING_MODE))
 
     if result == 0:
         bot.run(getenv("DISCORD_TOKEN"))

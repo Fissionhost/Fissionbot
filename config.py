@@ -1,6 +1,8 @@
 # flake8: noqa
 
 TESTING_SERVER: bool = True
+APPLICATIONS: bool = False
+REASONING: str = "There is a known issue, servers have to be manually created."
 
 APPLICATION_DETAILS: str = "application_details.json"
 APPLICATION_CHANNEL_ID: int = 1382395178291167272 if TESTING_SERVER else 1374083920743760076

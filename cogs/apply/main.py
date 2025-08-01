@@ -18,6 +18,8 @@ from config import (
     APPLICATION_CHANNEL_ID,
     ADMIN_IDS,
     APPLICATION_SUCCESS_CHANNEL_ID,
+    APPLICATIONS,
+    REASONING
 )
 from json import loads
 from string import digits, ascii_letters
@@ -50,6 +52,15 @@ class Apply(commands.Cog):
         if int(interaction.user.id) in self.bot.application_details:
             await self.bot.DeleteUserDetails(
                 userID=int(interaction.user.id)
+            )
+
+        if not APPLICATIONS:
+            return await interaction.response.send_message(
+                embed=Embed(
+                    title="Applications are disabled!",
+                    description=REASONING,
+                    color=Color.red()
+                )
             )
 
         if e := await self.bot.SaveDetails(
