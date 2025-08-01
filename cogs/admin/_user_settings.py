@@ -1,6 +1,7 @@
 import nextcord
 from nextcord.ui import Modal, TextInput, Button, View
 from cogs._pterodapi import API
+from json import loads
 
 # flake8: noqa: E501
 
@@ -105,7 +106,7 @@ class UserSettingsView(View):
             ephemeral=True
         )
 
-class DeleteConfirmationView(View):
+class  DeleteConfirmationView(View):
     def __init__(self, username: str, user_id: str | None, interaction_user: nextcord.User):
         super().__init__()
         self.username = username
@@ -120,8 +121,19 @@ class DeleteConfirmationView(View):
         if not await self.interaction_check(interaction):
             return
         
-        # Perform deletion using self.user_id
-        await api.Users.delete_user(self.user_id)
+        servers = loads(await api.Users.get_servers(self.user_id))
+        if 'attributes' not in servers:
+            await interaction.response.edit_message(
+                content=f"The user has no servers!",
+                view=None
+        )
+
+        for server in servers['attributes']['relationships']['servers']['data']:
+            server_id = server['attributes']['id']
+            response = await api.Servers.delete_server(server_id)
+            
+
+        response = await api.Users.delete_user(self.user_id)
         
         await interaction.response.edit_message(
             content=f"User {self.username} deleted.",
