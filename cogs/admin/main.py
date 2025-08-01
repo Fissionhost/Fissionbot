@@ -7,21 +7,15 @@ from nextcord import (
     ui,
     slash_command
 )
-from cogs import _pterodapi
 from config import ADMIN_IDS
+from cogs.admin._user_settings import userSettings
+from cogs.admin._misc_settings import miscSettings
+from cogs.admin._server_settings import serverSettings
 
 
 class Admin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.api = _pterodapi.API(
-            address="https://panel.fissionhost.org",
-            application_token=(
-                "ptla_4fB6pnehpUVKDEUY6L3IkFbKNfFuzFT4PXl9Gd6iBqp"
-            ),
-            user_token="ptlc_1qcXqvxqhFdQyBDk4UvvF0sw6IM2TDTd5UTFFc6BHUO",
-            debug=True,
-        )
 
     @slash_command(name="admin", description="Show an admin panel")
     async def admin(self, interaction: Interaction):
@@ -36,12 +30,13 @@ class Admin(commands.Cog):
         class AdminDropdown(ui.Select):
             def __init__(self):
                 options = [
-                    SelectOption(label="Server Details",
-                                 description="Get details for a server"),
-                    SelectOption(label="😊",
-                                 description="😊"),
-                    SelectOption(label="😁",
-                                 description="😁"),
+                    SelectOption(label="Servers",
+                                 description="Manage servers"),
+                    SelectOption(label="Users",
+                                 description="Manage users"),
+                    SelectOption(label="Misc",
+                                 description="Other settings that don't fit"
+                                 " into a catagory"),
                 ]
                 super().__init__(placeholder="Choose an admin action...",
                                  min_values=1,
@@ -50,18 +45,15 @@ class Admin(commands.Cog):
 
             async def callback(self, select_interaction: Interaction):
                 selected = self.values[0]
-                if selected == "Restart Server":
-                    await select_interaction.response.send_message(
-                        "Restarting server...", ephemeral=True)
-                elif selected == "Stop Server":
-                    await select_interaction.response.send_message(
-                        "Stopping server...", ephemeral=True)
-                elif selected == "Get Server Status":
-                    await select_interaction.response.send_message(
-                        "Fetching server status...", ephemeral=True)
-                else:
-                    await select_interaction.response.send_message(
-                        "Work in progress! 😁", ephemeral=True)
+                match selected:
+                    case "Severs":
+                        await serverSettings(select_interaction)
+                    case "Users":
+                        await userSettings(select_interaction)
+                    case "Misc":
+                        await miscSettings(select_interaction)
+                    case _:
+                        return
 
         class AdminDropdownView(ui.View):
             def __init__(self):
