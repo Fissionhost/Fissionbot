@@ -13,6 +13,63 @@ api = API(
     debug=True,
 )
 
+class UserPasswordModal(Modal):
+    def __init__(self, username: str):
+        super().__init__("Enter the desired password", timeout=300)
+        self.username = username
+        self.newpassword = TextInput(
+            label="Password",
+            placeholder="eg. iLoveCelcus123!",
+            min_length=5,
+            max_length=100,
+            required=True
+        )
+        
+        self.add_item(self.newpassword)
+    
+    async def callback(self, interaction: nextcord.Interaction):
+        await interaction.response.defer(ephemeral=True)
+
+        newpassword = str(self.newpassword.value)
+
+        username_mopped = api.Users.mop(self.username)
+        user_id = await api.Users.get_id(username_mopped)
+
+        user_details = loads(await api.Users.get_details(username_mopped))
+        attribs = user_details['data'][0]['attributes']
+        email = attribs['email']
+        firstname = attribs['first_name']
+        lastname = attribs['last_name']
+
+        await api.Users.update_user_password(
+            user_id,
+            email,
+            api.Users.mop(self.username),
+            firstname,
+            lastname,
+            newpassword
+        )
+
+        embed=nextcord.Embed(
+            title='Account modified succesfully!',
+            description='Below will be the new user details',
+            color=nextcord.Color.green()
+        )
+        
+        embed.add_field(name='Username', value=api.Users.mop(self.username))
+        embed.add_field(name='New Password', value=newpassword)
+
+        try:
+            return await interaction.followup.send(
+                embed=embed
+            )
+        except Exception as e:
+            await interaction.followup.send("Username: {}, Password: {}".format(
+                api.Users.mop(self.username),
+                newpassword
+            ))
+            api.logger.error(e)
+
 class UserInfoModal(Modal):
     def __init__(self, username: str):
         super().__init__("Enter your information", timeout=300)
@@ -81,17 +138,16 @@ class UserInfoModal(Modal):
             secrets.choice(words).capitalize() +
             secrets.choice(words).capitalize() +
             secrets.choice(words).capitalize() +
-            str(secrets.randbelow(90) + 10) +  # 2 random digits
-            secrets.choice("!@#$%&*")
+            str(secrets.randbelow(90) + 10)  # 2 random digits
         )
         self.password = password
 
         await api.Users.update_user_password(
             user_id,
-            self.email,
+            email,
             api.Users.mop(self.username),
-            self.firstname,
-            self.surname,
+            firstname,
+            surname,
             self.password
         )
 
@@ -102,17 +158,17 @@ class UserInfoModal(Modal):
         )
 
         embed.add_field(name="User ID", value=user_id)
-        embed.add_field(name="Email", value=self.email)
+        embed.add_field(name="Email", value=email)
         embed.add_field(name="Username", value=api.Users.mop(self.username))
-        embed.add_field(name="Firstname", value=self.firstname)
-        embed.add_field(name="Surname", value=self.surname)
+        embed.add_field(name="Firstname", value=firstname)
+        embed.add_field(name="Surname", value=surname)
         embed.add_field(name="Password", value=self.password)
         
         try:
-            return await interaction.response.send_message(
+            return await interaction.followup.send(
                 embed=embed
             )
-        except:
+        except Exception as e:
             api.logger.warning("The account details failed to send, so it must be sent here!")
             api.logger.warning("Username: {}, Password: {}".format(
                 api.Users.mop(self.username),
@@ -122,6 +178,7 @@ class UserInfoModal(Modal):
                 api.Users.mop(self.username),
                 self.password
             ))
+            api.logger.error(str(e))
 
 class UserSettingsModal(Modal):
     def __init__(self):
@@ -147,7 +204,7 @@ class UserSettingsView(View):
         
         # Initialize buttons
         self.delete_button = Button(label="Delete User", style=nextcord.ButtonStyle.danger)
-        self.manage_button = Button(label="Modify User", style=nextcord.ButtonStyle.primary)
+        self.manage_button = Button(label="Modify Password", style=nextcord.ButtonStyle.primary)
         self.create_button = Button(label="Create User", style=nextcord.ButtonStyle.success)
         
         # Add buttons to view
@@ -205,10 +262,9 @@ class UserSettingsView(View):
         if not await self.interaction_check(interaction):
             return
         
-        return await interaction.response.send_message(
-            f"Managing user: {self.username}",
-            ephemeral=True
-        )
+        # Send the modal to collect password
+        modal = UserPasswordModal(self.username)
+        return await interaction.response.send_modal(modal)
 
     async def on_create(self, interaction: nextcord.Interaction):
         if not await self.interaction_check(interaction):
@@ -218,7 +274,7 @@ class UserSettingsView(View):
         modal = UserInfoModal(self.username)
         return await interaction.response.send_modal(modal)
 
-class  DeleteConfirmationView(View):
+class DeleteConfirmationView(View):
     def __init__(self, username: str, user_id: str | None, interaction_user: nextcord.User):
         super().__init__()
         self.username = username
