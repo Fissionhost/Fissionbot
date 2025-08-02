@@ -1,4 +1,5 @@
 import nextcord
+import secrets
 from nextcord.ui import Modal, TextInput, Button, View
 from cogs._pterodapi import API
 from json import loads
@@ -11,6 +12,116 @@ api = API(
     user_token="ptlc_1qcXqvxqhFdQyBDk4UvvF0sw6IM2TDTd5UTFFc6BHUO",
     debug=True,
 )
+
+class UserInfoModal(Modal):
+    def __init__(self, username: str):
+        super().__init__("Enter your information", timeout=300)
+        self.username = username
+        self.email = TextInput(
+            label="Email",
+            placeholder="the.email@example.com",
+            min_length=5,
+            max_length=100,
+            required=True
+        )
+        self.firstname = TextInput(
+            label="First Name",
+            placeholder="John",
+            min_length=2,
+            max_length=50,
+            required=True
+        )
+        self.surname = TextInput(
+            label="Surname",
+            placeholder="Doe",
+            min_length=2,
+            max_length=50,
+            required=True
+        )
+        
+        self.add_item(self.email)
+        self.add_item(self.firstname)
+        self.add_item(self.surname)
+    
+    async def callback(self, interaction: nextcord.Interaction):
+        await interaction.response.defer(ephemeral=True)
+        
+        # Make the API call with the collected information
+        # Get the values entered in the modal
+        email = str(self.email.value)
+        firstname = str(self.firstname.value)
+        surname = str(self.surname.value)
+
+        response = await api.Users.create_user(
+            self.username,
+            email,
+            firstname,
+            surname
+        )
+
+        username_mopped = api.Users.mop(self.username)
+        user_id = await api.Users.get_id(username_mopped)
+        
+        if user_id is None:
+            api.logger.error(f"Failed to create user: {self.username}")
+            api.logger.error(response)
+            return await interaction.followup.send(
+                embed=nextcord.Embed(
+                    title='Account Failed to Create',
+                    description="The user's account has not been created!",
+                    color=nextcord.Color.red()
+                ), ephemeral=True
+            )
+
+        words = [
+            "apple", "river", "cloud", "stone", "light", "star", "wolf", "tree", "moon", "fire",
+            "ocean", "leaf", "wind", "sky", "mount", "echo", "frost", "dawn", "hawk", "rose"
+        ]
+        password = (
+            secrets.choice(words).capitalize() +
+            secrets.choice(words).capitalize() +
+            secrets.choice(words).capitalize() +
+            str(secrets.randbelow(90) + 10) +  # 2 random digits
+            secrets.choice("!@#$%&*")
+        )
+        self.password = password
+
+        await api.Users.update_user_password(
+            user_id,
+            self.email,
+            api.Users.mop(self.username),
+            self.firstname,
+            self.surname,
+            self.password
+        )
+
+        embed=nextcord.Embed(
+            title='User account created!',
+            description='Below will be the details generated',
+            color=nextcord.Color.blue()
+        )
+
+        embed.add_field(name="User ID", value=user_id)
+        embed.add_field(name="Email", value=self.email)
+        embed.add_field(name="Username", value=api.Users.mop(self.username))
+        embed.add_field(name="Firstname", value=self.firstname)
+        embed.add_field(name="Surname", value=self.surname)
+        embed.add_field(name="Password", value=self.password)
+        
+        try:
+            return await interaction.response.send_message(
+                embed=embed
+            )
+        except:
+            api.logger.warning("The account details failed to send, so it must be sent here!")
+            api.logger.warning("Username: {}, Password: {}".format(
+                api.Users.mop(self.username),
+                self.password
+            ))
+            await interaction.followup.send("Username: {}, Password: {}".format(
+                api.Users.mop(self.username),
+                self.password
+            ))
 
 class UserSettingsModal(Modal):
     def __init__(self):
@@ -42,12 +153,14 @@ class UserSettingsView(View):
         # Add buttons to view
         self.add_item(self.delete_button)
         self.add_item(self.manage_button)
+        self.add_item(self.create_button)
         
         # Disable buttons if user doesn't exist
         if user_id is None:
             self.delete_button.disabled = True
             self.manage_button.disabled = True
-            self.add_item(self.create_button)
+        else:
+            self.create_button.disabled = True
         
         # Set up callbacks
         self.delete_button.callback = self.on_delete
@@ -92,7 +205,7 @@ class UserSettingsView(View):
         if not await self.interaction_check(interaction):
             return
         
-        await interaction.response.send_message(
+        return await interaction.response.send_message(
             f"Managing user: {self.username}",
             ephemeral=True
         )
@@ -101,10 +214,9 @@ class UserSettingsView(View):
         if not await self.interaction_check(interaction):
             return
         
-        await interaction.response.send_message(
-            f"Creating user: {self.username}",
-            ephemeral=True
-        )
+        # Send the modal to collect user information
+        modal = UserInfoModal(self.username)
+        return await interaction.response.send_modal(modal)
 
 class  DeleteConfirmationView(View):
     def __init__(self, username: str, user_id: str | None, interaction_user: nextcord.User):
@@ -123,21 +235,37 @@ class  DeleteConfirmationView(View):
         
         servers = loads(await api.Users.get_servers(self.user_id))
         if 'attributes' not in servers:
-            await interaction.response.edit_message(
-                content=f"The user has no servers!",
-                view=None
-        )
+            return await interaction.response.edit_message(
+                embed=nextcord.Embed(
+                    title="Error deleting user's servers",
+                    description="Maybe the user has no servers?",
+                    color=nextcord.Color.red()
+                ), ephemeral=True
+            )
 
         for server in servers['attributes']['relationships']['servers']['data']:
             server_id = server['attributes']['id']
-            response = await api.Servers.delete_server(server_id)
+            await api.Servers.delete_server(server_id)
             
 
-        response = await api.Users.delete_user(self.user_id)
+        await api.Users.delete_user(self.user_id)
+        user_id = await api.Users.get_id(api.Users.mop(self.username))
         
-        await interaction.response.edit_message(
-            content=f"User {self.username} deleted.",
-            view=None
+        if user_id is None:
+            return await interaction.response.edit_message(
+                embed=nextcord.Embed(
+                    title="Account deleted",
+                    description="The account was succesfully deleted!",
+                    color=nextcord.Color.green()
+                ), ephemeral=True
+            )
+        
+        return await interaction.response.send_message(
+            embed=nextcord.Embed(
+                title="Error deleting account",
+                description="The account still remains!",
+                color=nextcord.Color.red()
+            ), ephemeral=True
         )
 
     @nextcord.ui.button(label="No", style=nextcord.ButtonStyle.secondary)

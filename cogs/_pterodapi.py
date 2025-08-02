@@ -1,5 +1,6 @@
 import aiohttp
 import asyncio
+import logging
 from json import dumps, loads
 
 egg_ids: dict[tuple, int] = {
@@ -440,6 +441,11 @@ class API:
         self.application_token = application_token
         self.user_token = user_token
         self.debug = debug
+        self.logger = logging.getLogger("Pterodapi")
+        if debug:
+            logging.basicConfig(level=logging.DEBUG)
+        else:
+            logging.basicConfig(level=logging.INFO)
         self.headers = {
             "Authorization": f"Bearer {self.application_token}",
             "Accept": "application/json",

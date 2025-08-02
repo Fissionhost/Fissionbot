@@ -1,1 +1,1 @@
-[[], ['There are no allocations available!']]
+[[], []]
