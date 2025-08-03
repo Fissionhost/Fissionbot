@@ -1,5 +1,6 @@
 import aiohttp
 import asyncio
+import logging
 from json import dumps, loads
 
 egg_ids: dict[tuple, int] = {
@@ -14,7 +15,46 @@ egg_ids: dict[tuple, int] = {
     ("Minecraft", "Bungeecord"): 1,
 }
 
-code_docker_images: dict[tuple, int] = {
+code_docker_images_from_egg_id: dict[int, str] = {
+    17: (
+        "ghcr.io/parkervcp/yolks:nodejs_21",
+        "node index.js",
+    ),
+    16: (
+        "ghcr.io/parkervcp/yolks:python_3.12",
+        "python app.py",
+    ),
+    15: (
+        "ghcr.io/parkervcp/yolks:java_21",
+        "java -jar server.jar",
+    ),
+    5: (
+        "ghcr.io/parkervcp/yolks:java_21",
+        "java -jar server.jar",
+    ),
+    4: (
+        "ghcr.io/parkervcp/yolks:java_21",
+        "java -jar server.jar",
+    ),
+    3: (
+        "ghcr.io/parkervcp/yolks:java_21",
+        "java -jar server.jar",
+    ),
+    1: (
+        "ghcr.io/parkervcp/yolks:java_21",
+        "java -jar server.jar",
+    ),
+    19: (
+        "ghcr.io/parkervcp/yolks:java_21",
+        "java -jar server.jar",
+    ),
+    18: (
+        "ghcr.io/parkervcp/yolks:java_21",
+        "java -jar server.jar",
+    ),
+}
+
+code_docker_images: dict[tuple[str, str], int] = {
     ("Discord Bot", "Javascript"): (
         "ghcr.io/parkervcp/yolks:nodejs_21",
         "node index.js",
@@ -273,7 +313,7 @@ class Servers:
         }
 
     async def get_available_allocations(self, node_id: int) -> list:
-        url = f"{self.address}/api/application/nodes/1/allocations"
+        url = f"{self.address}/api/application/nodes/{node_id}/allocations"
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=self.headers) as response:
                 data = await response.json()
@@ -284,19 +324,22 @@ class Servers:
                 ]
                 return available[0:1]
 
-    async def create_server(self, egg: list[str, str], user_id: int) -> str:
+    async def create_server(self, egg: list[str, str] | int, user_id: int) -> str:  # noqa: E501
         """Creates a server with the specified egg type and user ID."""
 
         if isinstance(egg, int):
+            egg_id = egg
+            docker_id = code_docker_images_from_egg_id[egg]
             egg = id_eggs[egg]
-            print(egg)
+            egg_tuple = id_eggs[egg_id]
+        else:
+            egg_tuple = tuple(egg)
+            if egg_tuple not in egg_ids:
+                return '{"errors":"Invalid egg type"}'
 
-        egg_tuple = tuple(egg)
-        if egg_tuple not in egg_ids:
-            return '{"errors":"Invalid egg type"}'
+            egg_id = egg_ids[egg_tuple]
+            docker_id = code_docker_images[egg_tuple]
 
-        egg_id = egg_ids[egg_tuple]
-        docker_id = code_docker_images[egg_tuple]
         allocation = await self.get_available_allocations(node_id=1)
 
         if not allocation or allocation == []:
@@ -440,6 +483,11 @@ class API:
         self.application_token = application_token
         self.user_token = user_token
         self.debug = debug
+        self.logger = logging.getLogger("Pterodapi")
+        if debug:
+            logging.basicConfig(level=logging.DEBUG)
+        else:
+            logging.basicConfig(level=logging.INFO)
         self.headers = {
             "Authorization": f"Bearer {self.application_token}",
             "Accept": "application/json",

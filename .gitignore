@@ -1,2 +1,6 @@
 *.env
+*.tar.gz
+
+.history
+
 application_details.json

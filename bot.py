@@ -4,12 +4,15 @@ import os
 import logging
 import colorlog
 import aiosqlite
+import asyncio
 from dotenv import load_dotenv
 from os import getenv, path
-from config import APPLICATION_DETAILS
+from config import APPLICATION_DETAILS, APPLICATIONS
 from json import load, dump
+from api_periodic_tests import Tester
 
 load_dotenv()
+DEBUGGING_MODE = True
 
 _handler = colorlog.StreamHandler()
 _handler.setFormatter(
@@ -89,7 +92,7 @@ class Bot(commands.Bot):
 _intents = nextcord.Intents.default()
 _intents.members = True
 # Command prefix is necessary for some reason
-bot = Bot(command_prefix="!", intents=_intents, debuggingMode=True)
+bot = Bot(command_prefix="!", intents=_intents, debuggingMode=DEBUGGING_MODE)
 
 
 @bot.event
@@ -99,6 +102,11 @@ async def on_ready() -> None:
                          "referrer_id BIGINT, count INTEGER DEFAULT 0)")
 
     logger.info(f"Logged in as {bot.user.name} - {bot.user.id}")
+    logger.info(f"Loaded cogs: {list(bot.cogs.keys())}")
+
+    if not APPLICATIONS:
+        logger.warning("Applications are disabled!")
+
     if path.exists(APPLICATION_DETAILS):
         with open(APPLICATION_DETAILS, "r") as f:
             bot.application_details = {int(k): v for k, v in load(f).items()}
@@ -111,13 +119,25 @@ async def on_ready() -> None:
             type=nextcord.ActivityType.watching,
             name="Fissionhost"))
 
-# Manually load apply since it's in a subfolder
-bot.load_extension("cogs.apply")
-bot.load_extension("cogs.admin")
 
-# Optionally auto-load others
-for filename in os.listdir("./cogs"):
-    if filename.endswith(".py") and not filename.startswith("_"):
-        bot.load_extension(f"cogs.{filename[:-3]}")
+def main():
+    bot.load_extension("cogs.apply")
+    bot.load_extension("cogs.admin")
 
-bot.run(getenv("DISCORD_TOKEN"))
+    for filename in os.listdir("./cogs"):
+        if filename.endswith(".py") and not filename.startswith("_"):
+            bot.load_extension(f"cogs.{filename[:-3]}")
+
+    print("Testing the api, please be patient...")
+    result = asyncio.run(Tester(DEBUGGING_MODE))
+
+    if result == 0:
+        bot.run(getenv("DISCORD_TOKEN"))
+    elif result == 204:
+        print("The tests failed and the results have been posted.")
+    else:
+        print("The tests failed and the results failed to send.")
+
+
+if __name__ == "__main__":
+    main()
