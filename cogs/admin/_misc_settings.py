@@ -1,38 +1,25 @@
 import nextcord
+import secrets
+from nextcord.ui import Modal, TextInput, Button, View
+from cogs._pterodapi import API
+from json import loads
 
+# flake8: noqa: E501
+
+api = API(
+    address="https://fissionhost.dpdns.org",
+    application_token="ptla_4fB6pnehpUVKDEUY6L3IkFbKNfFuzFT4PXl9Gd6iBqp",
+    user_token="ptlc_1qcXqvxqhFdQyBDk4UvvF0sw6IM2TDTd5UTFFc6BHUO",
+    debug=True,
+)
 
 async def miscSettings(interaction: nextcord.Interaction):
-    options = [
-        nextcord.SelectOption(
-            label="None",
-            value="None"
-        ),
-        nextcord.SelectOption(
-            label="None2",
-            value="None2"
-        ),
-    ]
-
-    select = nextcord.ui.Select(
-        placeholder="Choose your setting...",
-        options=options,
-        min_values=1,
-        max_values=1,
-    )
-
-    async def select_callback(interaction: nextcord.Interaction):
-        selected_value = select.values[0]
-        await interaction.response.send_message(
-            f"You selected: {selected_value}",
-            ephemeral=True
-        )
-
-    select.callback = select_callback
-
-    view = nextcord.ui.View()
-    view.add_item(select)
-    await interaction.response.send_message(
-        "Choose your user setting...",
-        view=view,
-        ephemeral=True
+    return interaction.response.send_message(
+        embed=nextcord.Embed(
+            title='No settings for you here',
+            description='Please suggest some misc settings!'
+        ).add_field(
+            name='Looking to create a server?',
+            value='Use /create_server'
+        ), ephemeral=True
     )

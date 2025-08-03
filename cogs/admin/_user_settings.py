@@ -235,7 +235,17 @@ class UserSettingsView(View):
             description="Select an action to perform:",
             color=nextcord.Color.blue()
         )
-        
+
+        user_details_resp = await api.Users.get_details(username_mopped)
+
+        if user_details_resp is not None:
+            user_details = loads(user_details_resp)['data'][0]['attributes']
+            embed.add_field(name="ID", value=user_details['id'])
+            embed.add_field(name="Email", value=user_details['email'])
+            embed.add_field(name="Firstname", value=user_details['first_name'])
+            embed.add_field(name="Lastname", value=user_details['last_name'])
+            embed.add_field(name="Created at", value=user_details['created_at'])
+
         view = cls(username, user_id, interaction.user)
         await interaction.followup.send(embed=embed, view=view, ephemeral=True)
 

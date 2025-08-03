@@ -102,6 +102,7 @@ async def on_ready() -> None:
                          "referrer_id BIGINT, count INTEGER DEFAULT 0)")
 
     logger.info(f"Logged in as {bot.user.name} - {bot.user.id}")
+    logger.info(f"Loaded cogs: {list(bot.cogs.keys())}")
 
     if not APPLICATIONS:
         logger.warning("Applications are disabled!")

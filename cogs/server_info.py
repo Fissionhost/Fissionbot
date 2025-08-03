@@ -9,7 +9,7 @@ class ServerInfo(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.api = _pterodapi.API(
-            address="https://panel.fissionhost.org",
+            address="https://fissionhost.dpdns.org",
             application_token=(
                 "ptla_4fB6pnehpUVKDEUY6L3IkFbKNfFuzFT4PXl9Gd6iBqp"
             ),  # Flake8's fault
